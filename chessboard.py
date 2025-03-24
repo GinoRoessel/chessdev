@@ -14,6 +14,11 @@ class ChessBoard:
         self.board=[[None for _ in range(8)] for _ in range(8)] #main data structure
     
     def setup_board(self,ruleset,game):
+        self.board=[[None for _ in range(8)] for _ in range(8)]
+        self.piece_lookup=defaultdict(list) #to lookup position of certain pieces
+        self.whitepieces=[] #to iterate to all the pieces left
+        self.blackpieces=[]
+        self.storage=None
         if ruleset=="classical":
             self.setup_board_classical(game)
     
@@ -60,7 +65,7 @@ class ChessBoard:
         if self.board[pos[0]][pos[1]]==None:
             return
         key=(self.board[pos[0]][pos[1]].symbol,self.board[pos[0]][pos[1]].color)
-        print(key)
+        print("key:",key)
         if key in self.piece_lookup:
             # print("key found")
             if isinstance(self.piece_lookup[key],list):
@@ -73,7 +78,7 @@ class ChessBoard:
                             self.whitepieces.remove(piece_)
                         elif piece_.color=="black":
                             self.blackpieces.remove(piece_)
-                            print(len(self.blackpieces))
+                            print("how many blackpieces left:",len(self.blackpieces))
                         self.piece_lookup[key].remove(piece_)
                         return
                     

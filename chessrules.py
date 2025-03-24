@@ -9,11 +9,11 @@ class Rules: #just staticmethods
     @staticmethod #complete check of a move
     def is_valid_move(piece,startrow,startcol,endrow,endcol,ruleset,board):
         if not Rules.is_possible_move(piece,startrow,startcol,endrow,endcol,ruleset,board):
-            # print("not possible")
+            print("not possible")
             return False
-        # print("is_valid_move: Rufe testing_move auf")
+        print("is_valid_move: Rufe testing_move auf")
         if not Rules.testing_move(piece,startrow,startcol,endrow,endcol,ruleset,board):
-            # print("not working after test")
+            print("not working after test")
             return False
         # print("valid")
         return True
@@ -22,10 +22,10 @@ class Rules: #just staticmethods
     def is_possible_move(piece,startrow,startcol,endrow,endcol,ruleset,board):
         if ruleset=="classical":
             if Rules.is_own_piece(piece,startrow,startcol,endrow,endcol,ruleset,board) is True:
-                # print("is an own piece")
+                print("is an own piece")
                 return False
             if (startrow,startcol)==(endrow,endcol):
-                # print("not changed the position")
+                print("not changed the position")
                 return False
             if isinstance(piece,Pawn):
                 return Rules.is_possible_pawnmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board)
@@ -131,8 +131,41 @@ class Rules: #just staticmethods
     def is_possible_kingmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board):
         if abs(startrow-endrow)<=1 and abs(startcol-endcol)<=1:
             return True
-        else: 
-            return False
+        #checking castle
+        if piece.color=="white":
+            direction=1 if startcol-endcol<0 else -1
+            if piece.position==(7,4):
+                if abs(startcol-endcol)==2 and startrow==endrow:
+                    if direction==1:
+                        if isinstance(board.board[7][7],Rook):
+                            for j in range(1,3):
+                                if board.board[startrow][startcol+(direction*j)]!=None:
+                                    return False
+                    elif direction==-1:
+                        if isinstance(board.board[7][0],Rook):
+                            for j in range(1,4):
+                                if board.board[startrow][startcol+(direction*j)]!=None:
+                                    return False
+                    return True
+        if piece.color=="black":
+            direction=1 if startcol-endcol>1 else -1
+            if piece.position==(0,4):
+                if abs(startcol-endcol)==2 and startrow==endrow:
+                    if direction==1:
+                        if isinstance(board.board[0][7],Rook):
+                            for j in range(1,3):
+                                if board.board[startrow][startrow+direction*j]!=None:
+                                    return False
+                    elif direction==-1:
+                        if isinstance(board.board[0][0],Rook):
+                            for j in range(1,4):
+                                if board.board[startrow][startrow+direction*j]!=None:
+                                    return False
+                    return True
+
+
+            
+        return False
 
     @staticmethod #if endsquare has an own piece on it
     def is_own_piece(piece,startrow,startcol,endrow,endcol,ruleset,board):
@@ -210,6 +243,31 @@ class Rules: #just staticmethods
             board.deupdate_board(piece,startrow,startcol,endrow,endcol)
             print("testing finished")
             return True
+    
+    @staticmethod
+    def extract_moves_from_informations(piece,startrow,startcol,endrow,endcol,ruleset,board): 
+        if ruleset=="classical":
+            moves=[]
+            #check castle
+            if isinstance(piece,King):
+                if abs(startcol-endcol)==2:
+                    direction=1 if startcol-endcol<0 else -1
+                    moves.append((piece,startrow,startcol,endrow,endcol))
+                    if direction==1:
+                        moves.append((board.board[startrow][7],startrow,7,endrow,endcol-1))
+                    elif direction==-1:
+                        moves.append((board.board[startrow][0],startrow,0,endrow,endcol+1))
+                    return moves
+            #check pawn on last row and en passant
+            if isinstance(piece,Pawn):
+                #check last row
+                if endrow==0 or endrow==7:
+                    moves.append((piece,startrow,startcol,None,None))
+                    moves.append((board.board[endrow][endcol],endrow,endcol,None,None))
+                    moves.append((Queen(piece.color),None,None,endrow,endcol))
+                    return moves
+            return [(piece,startrow,startcol,endrow,endcol)]
+
 
 
             
