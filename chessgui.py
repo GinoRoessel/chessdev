@@ -13,6 +13,7 @@ class ChessGUI:
         self.board_frame = tk.Frame(self.root)
         self.board_frame.pack(padx=10, pady=10)
         self.create_gui_board(game)
+        self.setup_gui(game.ruleset_,game.status,game.current_player)
         self.restartbutton=tk.Button(self.root,
                                     bg="grey",
                                     padx=30,
@@ -21,6 +22,10 @@ class ChessGUI:
                                     command=lambda : game.restartgame())
         self.restartbutton.config(text="restart")
         self.restartbutton.pack(padx=10, pady=10)
+        game.setup_gui_=self.setup_gui
+        game.update_gui_=self.gui_update
+        game.changes_gui_=self.gui_changes
+        game.promotion_choice_=self.promotion_choice
 
     def create_gui_board(self,game):
         self.buttons=[[None for _ in range(8)] for _ in range(8)]
@@ -70,3 +75,33 @@ class ChessGUI:
             self.buttons[row][col].config(text=str(element),fg=element.color)
         else:
             self.buttons[row][col].config(text=" ")
+
+    def promotion_choice(self,color):
+        self.selected_piece = tk.StringVar()  # Variable zum Speichern der Auswahl
+
+        self.top = tk.Toplevel(self.root)  
+        self.top.title("pawn promotion")
+
+        self.top.update_idletasks()  # Fenstergröße berechnen
+        x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (self.top.winfo_reqwidth() // 2)
+        y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (self.top.winfo_reqheight() // 2)
+        self.top.geometry(f"+{x}+{y}")  # Fensterposition setzen
+
+        pieces_ = ["Queen", "Rook", "Bishop", "Knight"]
+        symbols_ = ["♛", "♜", "♝", "♞"] if color == "white" else ["♕", "♖", "♗", "♘"]
+
+        tk.Label(self.top, text="choose a piece:", font=("Arial", 14)).pack(pady=10)
+
+
+        for piece, symbol in zip(pieces_, symbols_):
+            btn = tk.Button(self.top, text=symbol, font=("Arial", 20),
+                            command=lambda p=piece: self.set_piece(p))
+            btn.pack(pady=5, padx=10, fill="x")
+
+        self.top.wait_window()  # Warten, bis der Nutzer eine Auswahl trifft
+        return self.selected_piece.get()
+
+
+    def set_piece(self,piece):
+        self.selected_piece.set(piece)  # Auswahl speichern
+        self.top.destroy()  # Fenster schließen

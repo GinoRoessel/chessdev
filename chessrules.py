@@ -245,7 +245,7 @@ class Rules: #just staticmethods
             return True
     
     @staticmethod
-    def extract_moves_from_informations(piece,startrow,startcol,endrow,endcol,ruleset,board): 
+    def extract_moves_from_informations(piece,startrow,startcol,endrow,endcol,ruleset,board,promotion_choice): 
         if ruleset=="classical":
             moves=[]
             #check castle
@@ -264,7 +264,17 @@ class Rules: #just staticmethods
                 if endrow==0 or endrow==7:
                     moves.append((piece,startrow,startcol,None,None))
                     moves.append((board.board[endrow][endcol],endrow,endcol,None,None))
-                    moves.append((Queen(piece.color),None,None,endrow,endcol))
+                    chosen_piece = None
+                    while len(moves)==2:
+                        chosen_piece = promotion_choice(piece.color)
+                        if chosen_piece=="Queen":
+                            moves.append((Queen(piece.color),None,None,endrow,endcol))
+                        elif chosen_piece=="Rook":
+                            moves.append((Rook(piece.color),None,None,endrow,endcol))
+                        elif chosen_piece=="Bishop":
+                            moves.append((Bishop(piece.color),None,None,endrow,endcol))
+                        elif chosen_piece=="Knight":
+                            moves.append((Knight(piece.color),None,None,endrow,endcol))
                     return moves
             return [(piece,startrow,startcol,endrow,endcol)]
 

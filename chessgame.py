@@ -1,7 +1,6 @@
 import tkinter as tk
 from chesspieces import *
 from chessrules import *
-from chessgui import *
 from chessboard import *
 
 class ChessGame:
@@ -13,9 +12,13 @@ class ChessGame:
         self.selected_pos=None
         self.current_player="white"
         self.status=" "
-        self.chessgui=ChessGUI(root,self) 
-        self.chessgui.setup_gui(self.ruleset_,self.status,self.current_player)
         self.current_move=None
+        #gui functions
+        self.setup_gui_=None
+        self.update_gui_=None
+        self.changes_gui_=None
+        self.promotion_choice_=None
+        # self.chessgui.promotion_choice(self.current_player)
 
     
     def on_square_click(self,r,c): #button command
@@ -26,12 +29,14 @@ class ChessGame:
                     self.make_move(self.selected_piece,self.selected_pos[0],self.selected_pos[1],r,c)
                     self.current_player="black" if self.current_player=="white" else "white"
                     self.checkthegame()
-                    self.chessgui.gui_update(self.current_player,self.status)
-                    for m in self.current_move:
-                        if m[1]!=None or m[2]!=None:
-                            self.chessgui.gui_changes(m[1],m[2],self.chessboard_.board[m[1]][m[2]])
-                        if m[3]!=None or m[4]!=None:
-                            self.chessgui.gui_changes(m[3],m[4],self.chessboard_.board[m[3]][m[4]])
+                    if self.update_gui_ :
+                        self.update_gui_(self.current_player,self.status)
+                    if self.changes_gui_:
+                        for m in self.current_move:
+                            if m[1]!=None or m[2]!=None:
+                                self.changes_gui_(m[1],m[2],self.chessboard_.board[m[1]][m[2]])
+                            if m[3]!=None or m[4]!=None:
+                                self.changes_gui_(m[3],m[4],self.chessboard_.board[m[3]][m[4]])
                 self.selected_piece=None
                 self.selected_pos=None
                 # print(self.selected_pos)
@@ -49,7 +54,7 @@ class ChessGame:
 
     def make_move(self,piece,startrow,startcol,endrow,endcol): #updating the data structures for a complete move
         #for example the castle has 2 single moves
-        self.current_move=Rules.extract_moves_from_informations(piece,startrow,startcol,endrow,endcol,self.ruleset_,self.chessboard_)
+        self.current_move=Rules.extract_moves_from_informations(piece,startrow,startcol,endrow,endcol,self.ruleset_,self.chessboard_,self.promotion_choice_)
         for move in self.current_move:
             self.make_single_move(move[0],move[1],move[2],move[3],move[4])
 
@@ -86,7 +91,8 @@ class ChessGame:
         self.selected_pos=None
         self.current_player="white"
         self.status=" "
-        self.chessgui.setup_gui(self.ruleset_,self.status,self.current_player)
+        if self.setup_gui_:
+            self.setup_gui_(self.ruleset_,self.status,self.current_player)
 
         
         

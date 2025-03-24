@@ -8,4 +8,5 @@ from chessgame import *
 if __name__== "__main__":
     root=tk.Tk()
     game=ChessGame(root)
+    gui=ChessGUI(root,game)
     root.mainloop()
