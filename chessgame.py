@@ -13,6 +13,7 @@ class ChessGame:
         self.current_player="white"
         self.status=" "
         self.current_move=None
+        self.move_list=[]
         #gui functions
         self.setup_gui_=None
         self.update_gui_=None
@@ -27,6 +28,7 @@ class ChessGame:
                 if self.checking_move(self.selected_piece,
                                     self.selected_pos[0],self.selected_pos[1],r,c):
                     self.make_move(self.selected_piece,self.selected_pos[0],self.selected_pos[1],r,c)
+                    self.move_list.append((self.selected_piece,(r,c)))
                     self.current_player="black" if self.current_player=="white" else "white"
                     self.checkthegame()
                     if self.update_gui_ :
@@ -50,7 +52,7 @@ class ChessGame:
                     # print(self.selected_piece)
     
     def checking_move(self,piece,startrow,startcol,endrow,endcol): 
-        return Rules.is_valid_move(piece,startrow,startcol,endrow,endcol,self.ruleset_,self.chessboard_)
+        return Rules.is_valid_move(piece,startrow,startcol,endrow,endcol,self.ruleset_,self.chessboard_,self.move_list)
 
     def make_move(self,piece,startrow,startcol,endrow,endcol): #updating the data structures for a complete move
         #for example the castle has 2 single moves
@@ -77,8 +79,8 @@ class ChessGame:
             self.chessboard_.board[startrow][startcol]=None
             
     def checkthegame(self): #check or mate?
-        if Rules.checking_check(self.chessboard_,self.current_player,self.ruleset_):
-            if Rules.checking_mate(self.chessboard_,self.current_player,self.ruleset_):
+        if Rules.checking_check(self.chessboard_,self.current_player,self.ruleset_,self.move_list):
+            if Rules.checking_mate(self.chessboard_,self.current_player,self.ruleset_,self.move_list):
                 self.status=f"{self.current_player} is mated, game over"
             else :
                 self.status=f"{self.current_player} is in check"         

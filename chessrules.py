@@ -7,19 +7,19 @@ class Rules: #just staticmethods
 
             
     @staticmethod #complete check of a move
-    def is_valid_move(piece,startrow,startcol,endrow,endcol,ruleset,board):
-        if not Rules.is_possible_move(piece,startrow,startcol,endrow,endcol,ruleset,board):
+    def is_valid_move(piece,startrow,startcol,endrow,endcol,ruleset,board,movelist):
+        if not Rules.is_possible_move(piece,startrow,startcol,endrow,endcol,ruleset,board,movelist):
             print("not possible")
             return False
         print("is_valid_move: Rufe testing_move auf")
-        if not Rules.testing_move(piece,startrow,startcol,endrow,endcol,ruleset,board):
+        if not Rules.testing_move(piece,startrow,startcol,endrow,endcol,ruleset,board,movelist):
             print("not working after test")
             return False
         # print("valid")
         return True
     
     @staticmethod #if the logic of the piece would allow the move
-    def is_possible_move(piece,startrow,startcol,endrow,endcol,ruleset,board):
+    def is_possible_move(piece,startrow,startcol,endrow,endcol,ruleset,board,movelist):
         if ruleset=="classical":
             if Rules.is_own_piece(piece,startrow,startcol,endrow,endcol,ruleset,board) is True:
                 print("is an own piece")
@@ -28,7 +28,7 @@ class Rules: #just staticmethods
                 print("not changed the position")
                 return False
             if isinstance(piece,Pawn):
-                return Rules.is_possible_pawnmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board)
+                return Rules.is_possible_pawnmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board,movelist)
             if isinstance(piece,Rook):
                 return Rules.is_possible_rookmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board)
             if isinstance(piece,Knight):
@@ -41,7 +41,7 @@ class Rules: #just staticmethods
                 return Rules.is_possible_kingmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board)
 
     @staticmethod
-    def is_possible_pawnmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board):
+    def is_possible_pawnmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board,movelist):
         # print("piece is",piece)
         # print("startrow is",startrow)
         # print("startcol is",startcol)
@@ -57,6 +57,16 @@ class Rules: #just staticmethods
         try: 
             if (startcol+1==endcol or startcol-1==endcol) and endrow-startrow==direction\
               and board.board[endrow][endcol].color!=piece.color: #diagonal schlagen
+                return True
+        except AttributeError:
+            pass
+        #en passant
+        try:
+            if (startcol+1==endcol or startcol-1==endcol)\
+            and endrow-startrow==direction\
+            and startrow==(3 if piece.color=="white" else 4)\
+            and board.board[startrow][endcol].color!=piece.color\
+            and movelist[-1][1]==(startrow,endcol):
                 return True
         except AttributeError:
             pass
@@ -176,7 +186,7 @@ class Rules: #just staticmethods
         return False
     
     @staticmethod #if the given color is in check
-    def checking_check(board,color,ruleset):
+    def checking_check(board,color,ruleset,movelist):
         if ruleset=="classical":
             # print("now checking check")
             king_position=board.piece_lookup["K",color].position
@@ -186,15 +196,16 @@ class Rules: #just staticmethods
                     # print(piece_)
                     # print(piece_.position)
                     if Rules.is_possible_move(piece_,piece_.position[0],piece_.position[1],
-                                              king_position[0],king_position[1],ruleset,board):
+                                              king_position[0],king_position[1],ruleset,board,movelist): #..
                         # print("check detected")
+                        print(piece_.position)
                         return True
                 # print("no check detected")
                 return False
             if color=="black":
                 for piece in board.whitepieces:
                     if Rules.is_possible_move(piece,piece.position[0],piece.position[1],
-                                              king_position[0],king_position[1],ruleset,board):
+                                              king_position[0],king_position[1],ruleset,board,movelist):
                         return True
                 return False
             # print("no check detected")
@@ -202,18 +213,18 @@ class Rules: #just staticmethods
         
     
     @staticmethod #if the given color is in mate
-    def checking_mate(board,color,ruleset):
+    def checking_mate(board,color,ruleset,movelist):
         print("checking the mate...")
         # print(board.board[1][5])
         # print(board.blackpieces)
         # print(len(board.blackpieces))
         if ruleset=="classical":
-            if Rules.checking_check(board,color,ruleset):
+            if Rules.checking_check(board,color,ruleset,movelist):
                 if color=="white":
                     for piece in board.whitepieces:
                         for r in range(8):
                             for c in range(8):
-                                if Rules.is_valid_move(piece,piece.position[0],piece.position[1],r,c,ruleset,board):
+                                if Rules.is_valid_move(piece,piece.position[0],piece.position[1],r,c,ruleset,board,movelist):
                                     print("there is a move")
                                     return False
                     print("checkmate!")
@@ -225,7 +236,7 @@ class Rules: #just staticmethods
                         # print(board.board[1][5])
                         for r in range(8):
                             for c in range(8):
-                                if Rules.is_valid_move(piece,piece.position[0],piece.position[1],r,c,ruleset,board):
+                                if Rules.is_valid_move(piece,piece.position[0],piece.position[1],r,c,ruleset,board,movelist):
                                     print("no checkmate!")
                                     return False
                     print("checkmate!")
@@ -234,10 +245,11 @@ class Rules: #just staticmethods
                 return False
     
     @staticmethod #if move is possible, it does the move and checking for check and take the move back
-    def testing_move(piece,startrow,startcol,endrow,endcol,ruleset,board):
+    def testing_move(piece,startrow,startcol,endrow,endcol,ruleset,board,movelist):
         board.update_board(piece,startrow,startcol,endrow,endcol)
-        if Rules.checking_check(board,piece.color,ruleset):
+        if Rules.checking_check(board,piece.color,ruleset,movelist):
             board.deupdate_board(piece,startrow,startcol,endrow,endcol)
+            print("there was a check")
             return False
         else:
             board.deupdate_board(piece,startrow,startcol,endrow,endcol)
@@ -275,6 +287,14 @@ class Rules: #just staticmethods
                             moves.append((Bishop(piece.color),None,None,endrow,endcol))
                         elif chosen_piece=="Knight":
                             moves.append((Knight(piece.color),None,None,endrow,endcol))
+                    return moves
+                #en passant
+                if abs(startcol-endcol)==1 and board.board[endrow][endcol]==None:
+                    moves.append((piece,startrow,startcol,endrow,endcol))
+                    try:
+                        moves.append((board.board[startrow][endcol],startrow,endcol,None,None))
+                    except AttributeError:
+                        pass
                     return moves
             return [(piece,startrow,startcol,endrow,endcol)]
 
