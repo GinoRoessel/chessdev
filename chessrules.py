@@ -38,7 +38,7 @@ class Rules: #just staticmethods
             if isinstance(piece,Queen):
                 return Rules.is_possible_queenmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board)
             if isinstance(piece,King):
-                return Rules.is_possible_kingmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board)
+                return Rules.is_possible_kingmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board,movelist)
 
     @staticmethod
     def is_possible_pawnmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board,movelist):
@@ -138,43 +138,75 @@ class Rules: #just staticmethods
         return False
 
     @staticmethod
-    def is_possible_kingmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board):
+    def is_possible_kingmove_classical(piece,startrow,startcol,endrow,endcol,ruleset,board,movelist):
         if abs(startrow-endrow)<=1 and abs(startcol-endcol)<=1:
             return True
         #checking castle
-        if piece.color=="white":
-            direction=1 if startcol-endcol<0 else -1
-            if piece.position==(7,4):
-                if abs(startcol-endcol)==2 and startrow==endrow:
-                    if direction==1:
-                        if isinstance(board.board[7][7],Rook):
-                            for j in range(1,3):
-                                if board.board[startrow][startcol+(direction*j)]!=None:
+        if not any(piece==tup[0] for tup in movelist):
+            if not Rules.checking_check(board,piece.color,ruleset,movelist): #if already moved
+                if piece.color=="white":
+                    direction=1 if startcol-endcol<0 else -1
+                    if piece.position==(7,4):
+                        if abs(startcol-endcol)==2 and startrow==endrow:
+                            if direction==1:
+                                if isinstance(board.board[7][7],Rook):
+                                    if any(board.board[7][7]==tup[0] for tup in movelist):
+                                        return False
+                                    for j in range(1,3):
+                                        if board.board[startrow][startcol+(direction*j)]!=None:
+                                            return False
+                                        for p in board.blackpieces:
+                                            if Rules.is_possible_move(p,p.position[0],p.position[1],
+                                                                    startrow,startcol+(direction*j),ruleset,board,movelist):
+                                                return False
+                                                
+                                else:
                                     return False
-                    elif direction==-1:
-                        if isinstance(board.board[7][0],Rook):
-                            for j in range(1,4):
-                                if board.board[startrow][startcol+(direction*j)]!=None:
+                            elif direction==-1:
+                                if isinstance(board.board[7][0],Rook):
+                                    if any(board.board[7][0]==tup[0] for tup in movelist):
+                                        return False
+                                    for j in range(1,4):
+                                        if board.board[startrow][startcol+(direction*j)]!=None:
+                                            return False
+                                        for p in board.blackpieces:
+                                            if Rules.is_possible_move(p,p.position[0],p.position[1],
+                                                                    startrow,startcol+(direction*j),ruleset,board,movelist):
+                                                return False
+                                else:
                                     return False
-                    return True
-        if piece.color=="black":
-            direction=1 if startcol-endcol>1 else -1
-            if piece.position==(0,4):
-                if abs(startcol-endcol)==2 and startrow==endrow:
-                    if direction==1:
-                        if isinstance(board.board[0][7],Rook):
-                            for j in range(1,3):
-                                if board.board[startrow][startrow+direction*j]!=None:
+                            return True
+                if piece.color=="black":
+                    direction=1 if startcol-endcol>1 else -1
+                    if piece.position==(0,4):
+                        if abs(startcol-endcol)==2 and startrow==endrow:
+                            if direction==1:
+                                if isinstance(board.board[0][7],Rook):
+                                    if any(board.board[0][7]==tup[0] for tup in movelist):
+                                        return False
+                                    for j in range(1,3):
+                                        if board.board[startrow][startrow+direction*j]!=None:
+                                            return False
+                                        for p in board.whitepieces:
+                                            if Rules.is_possible_move(p,p.position[0],p.position[1],
+                                                                    startrow,startcol+(direction*j),ruleset,board,movelist):
+                                                return False
+                                else:
                                     return False
-                    elif direction==-1:
-                        if isinstance(board.board[0][0],Rook):
-                            for j in range(1,4):
-                                if board.board[startrow][startrow+direction*j]!=None:
+                            elif direction==-1:
+                                if isinstance(board.board[0][0],Rook):
+                                    if any(board.board[0][0]==tup[0] for tup in movelist):
+                                        return False
+                                    for j in range(1,4):
+                                        if board.board[startrow][startrow+direction*j]!=None:
+                                            return False
+                                        for p in board.whitepieces:
+                                            if Rules.is_possible_move(p,p.position[0],p.position[1],
+                                                                    startrow,startcol+(direction*j),ruleset,board,movelist):
+                                                return False
+                                else: 
                                     return False
-                    return True
-
-
-            
+                            return True
         return False
 
     @staticmethod #if endsquare has an own piece on it
@@ -195,11 +227,12 @@ class Rules: #just staticmethods
                 for piece_ in board.blackpieces:
                     # print(piece_)
                     # print(piece_.position)
-                    if Rules.is_possible_move(piece_,piece_.position[0],piece_.position[1],
-                                              king_position[0],king_position[1],ruleset,board,movelist): #..
-                        # print("check detected")
-                        print(piece_.position)
-                        return True
+                    if not isinstance(piece_,King):
+                        if Rules.is_possible_move(piece_,piece_.position[0],piece_.position[1],
+                                                king_position[0],king_position[1],ruleset,board,movelist): #..
+                            # print("check detected")
+                            print(piece_.position)
+                            return True
                 # print("no check detected")
                 return False
             if color=="black":
