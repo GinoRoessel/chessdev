@@ -4,22 +4,31 @@ from itertools import chain
 
 class ChessBoard:
     def __init__(self):
+        self.ruleset_="classical"
         self.create_board()
         self.piece_lookup=defaultdict(list) #to lookup position of certain pieces
         self.whitepieces=[] #to iterate to all the pieces left
         self.blackpieces=[]
+        #
+        self.selected_piece=None
+        self.selected_pos=None
+        self.current_player="white"
+        self.status=" "
+        self.current_move=None
+        self.move_list=[]
+        #
         self.storage=None #to save a piece if you want to take the move back
 
     def create_board(self):
         self.board=[[None for _ in range(8)] for _ in range(8)] #main data structure
     
-    def setup_board(self,ruleset,game):
+    def setup_board(self,game):
         self.board=[[None for _ in range(8)] for _ in range(8)]
         self.piece_lookup=defaultdict(list) #to lookup position of certain pieces
         self.whitepieces=[] #to iterate to all the pieces left
         self.blackpieces=[]
         self.storage=None
-        if ruleset=="classical":
+        if self.ruleset_=="classical":
             self.setup_board_classical(game)
     
     def setup_board_classical(self,game):
