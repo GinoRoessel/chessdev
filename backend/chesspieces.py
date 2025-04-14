@@ -1,8 +1,20 @@
-class ChessPieces:
+from base import Base
+class _ChessPieces:
     def __init__(self,color,symbol,guisymbol):
         self.color=color
         self.guisymbol=guisymbol #unicode
         self.position=None
+        self.symbol=symbol #letter
+    
+    def __str__(self):
+        return self.guisymbol
+    
+class ChessPieces:
+    def __init__(self,color,symbol,guisymbol):
+        self.color=color
+        self.guisymbol=guisymbol #unicode
+        self.positionx=None
+        self.positiony=None
         self.symbol=symbol #letter
     
     def __str__(self):

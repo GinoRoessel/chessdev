@@ -1,3 +1,4 @@
+from base import Base
 import tkinter as tk
 from chesspieces import *
 from chessmove import *
@@ -17,9 +18,10 @@ class ChessGame:
 
     
     def on_square_click(self,r,c): #button command
+        print("touched")
         if self.chessboard_.status!="white is mated, game over" and self.chessboard_.status!="black is mated, game over":
             if self.chessboard_.selected_piece!=None:
-                move_to_prove=ChessMove((self.chessboard_.selected_pos[0],self.chessboard_.selected_pos[1]),(r,c),
+                move_to_prove=ChessMove(self.chessboard_.selected_posy,self.chessboard_.selected_posx,r,c,
                                         self.chessboard_.selected_piece)
                 self.chessboard_.current_move=self.checking_move(move_to_prove)
                 if self.chessboard_.current_move:
@@ -31,30 +33,39 @@ class ChessGame:
                     if self.changes_gui_:
                         move_=self.chessboard_.current_move
                         if move_.is_enpassant==False and move_.is_castle==False and move_.is_promotion==False:
-                            self.changes_gui_(move_.startpos[0],move_.startpos[1],self.chessboard_.board[move_.startpos[0]][move_.startpos[1]])
-                            self.changes_gui_(move_.endpos[0],move_.endpos[1],self.chessboard_.board[move_.endpos[0]][move_.endpos[1]])
+                            # print("startpos",move_.startposy,move_.startposx)
+                            # print("endpos",move_.endposy,move_.endposx)
+                            self.changes_gui_(move_.startposy,move_.startposx,self.chessboard_.board[move_.startposy][move_.startposx])
+                            # print(self.chessboard_.board[move_.endposy][move_.endposx])
+                            self.changes_gui_(move_.endposy,move_.endposx,self.chessboard_.board[move_.endposy][move_.endposx])
                         elif move_.is_enpassant==True:
-                            self.changes_gui_(move_.startpos[0],move_.startpos[1],self.chessboard_.board[move_.startpos[0]][move_.startpos[1]])
-                            self.changes_gui_(move_.endpos[0],move_.endpos[1],self.chessboard_.board[move_.endpos[0]][move_.endpos[1]])
-                            self.changes_gui_(move_.captured_piece.position[0],move_.captured_piece.position[1],self.chessboard_.board[move_.captured_piece.position[0]][move_.captured_piece.position[1]])
+                            self.changes_gui_(move_.startposy,move_.startposx,self.chessboard_.board[move_.startposy][move_.startposx])
+                            self.changes_gui_(move_.endposy,move_.endposx,self.chessboard_.board[move_.endposy][move_.endposx])
+                            self.changes_gui_(move_.captured_piece.positiony,move_.captured_piece.positionx,self.chessboard_.board[move_.captured_piece_posy][move_.captured_piece_posx])
                         elif move_.is_castle==True:
-                            self.changes_gui_(move_.startpos[0],move_.startpos[1],self.chessboard_.board[move_.startpos[0]][move_.startpos[1]])
-                            self.changes_gui_(move_.endpos[0],move_.endpos[1],self.chessboard_.board[move_.endpos[0]][move_.endpos[1]])
-                            self.changes_gui_(move_.castle_secondpiece_pos[0],move_.castle_secondpiece_pos[1],self.chessboard_.board[move_.castle_secondpiece_pos[0]][move_.castle_secondpiece_pos[1]])
-                            self.changes_gui_(move_.startpos[0],(move_.startpos[1]+move_.endpos[1])//2,self.chessboard_.board[move_.startpos[0]][(move_.startpos[1]+move_.endpos[1])//2])
+                            self.changes_gui_(move_.startposy,move_.startposx,self.chessboard_.board[move_.startposy][move_.startposx])
+                            self.changes_gui_(move_.endposy,move_.endposx,self.chessboard_.board[move_.endposy][move_.endposx])
+                            self.changes_gui_(move_.castle_secondpiece_posy,move_.castle_secondpiece_posx,self.chessboard_.board[move_.castle_secondpiece_posy][move_.castle_secondpiece_posx])
+                            self.changes_gui_(move_.startposy,(move_.startposx+move_.endposx)//2,self.chessboard_.board[move_.startposy][(move_.startposx+move_.endposx)//2])
                         elif move_.is_promotion==True:
-                            self.changes_gui_(move_.startpos[0],move_.startpos[1],self.chessboard_.board[move_.startpos[0]][move_.startpos[1]])
-                            self.changes_gui_(move_.endpos[0],move_.endpos[1],self.chessboard_.board[move_.endpos[0]][move_.endpos[1]])
+                            self.changes_gui_(move_.startposy,move_.startposx,self.chessboard_.board[move_.startposy][move_.startposx])
+                            self.changes_gui_(move_.endposy,move_.endposx,self.chessboard_.board[move_.endposy][move_.endposx])
 
                 self.chessboard_.selected_piece=None
-                self.chessboard_.selected_pos=None
+                self.chessboard_.selected_posy=None
+                self.chessboard_.selected_posx=None
                 # print(self.chessboard_.selected_pos)
                 # print(self.chessboard_.selected_piece)
             else:
+                # print("select piece check")
                 piece=self.chessboard_.board[r][c]
+                # print(piece)
+                # print(self.chessboard_.piece_lookup["Q","white"])
                 if piece and piece.color==self.chessboard_.current_player: 
+                    # print("valid selelct piece")
                     self.chessboard_.selected_piece=self.chessboard_.board[r][c]
-                    self.chessboard_.selected_pos=(r,c)
+                    self.chessboard_.selected_posy=r
+                    self.chessboard_.selected_posx=c
                     # print(self.chessboard_.selected_pos)
                     # print(self.chessboard_.selected_piece)
     
@@ -74,7 +85,8 @@ class ChessGame:
     def restartgame(self):
         self.chessboard_.setup_board(self.chessboard_.ruleset_) 
         self.chessboard_.selected_piece=None
-        self.chessboard_.selected_pos=None
+        self.chessboard_.selected_posy=None
+        self.chessboard_.selected_posx=None
         self.chessboard_.current_player="white"
         self.chessboard_.status=" "
         if self.setup_gui_:
