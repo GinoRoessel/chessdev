@@ -119,7 +119,7 @@ class Rules: #just staticmethods
                 move__.captured_piece_pos=(move__.endpos[0],move__.endpos[1])
             return move__      
         return False
-
+#
     @staticmethod
     def is_possible_knightmove_classical(move__,board,justtest):
         if (abs(move__.startpos[0]-move__.endpos[0])==2 or abs(move__.startpos[0]-move__.endpos[0])==1) and \
