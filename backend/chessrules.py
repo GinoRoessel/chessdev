@@ -1,6 +1,6 @@
 from chesspieces import *
 from chessmove import *
-
+#
 
 class Rules: #just staticmethods
     def __init__(self,ruleset):
