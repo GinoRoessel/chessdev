@@ -1,3 +1,4 @@
+from base import Base
 from chesspieces import *
 from chessmove import *
 #
@@ -11,11 +12,13 @@ class Rules: #just staticmethods
     def is_valid_move(move__,board,promotion_choice=None,justtest=False):
         move_=Rules.is_possible_move(move__,board,justtest)
         if not move_:
+            print("not possible")
             return False
         move_=Rules.testing_move(move_,board,promotion_choice,justtest)
         if not move_:
+            print("not testible")
             return False
-        # print("valid")
+    
 
         return move_
     
@@ -169,21 +172,15 @@ class Rules: #just staticmethods
     def is_possible_kingmove_classical(move__,board,justtest):
         if abs(move__.startposy-move__.endposy)<=1 and abs(move__.startposx-move__.endposx)<=1:
             return move__
-        print("check castle")
         #checking castle
         if not any(move__.piece==tup.piece for tup in board.move_list):
             if not Rules.checking_check(move__.piece.color,board): 
                 if move__.piece.color=="white":
-                    print("check white castle")
                     direction=1 if move__.startposx-move__.endposx<0 else -1
-                    print(move__.piece.positiony,move__.piece.positionx)
                     if move__.piece.positiony==7 and move__.piece.positionx==4:
-                        print("king on right position")
                         if abs(move__.startposx-move__.endposx)==2 and move__.endposy==move__.startposy:
                             if direction==1:
-                                print("castle could be okay")
                                 if isinstance(board.board[7][7],Rook):
-                                    print("also a rook")
                                     if any(board.board[7][7]==tup.piece for tup in board.move_list):
                                         return False
                                     for j in range(1,3):
@@ -273,7 +270,6 @@ class Rules: #just staticmethods
     @staticmethod #if the given color is in check
     def checking_check(color,board):
         if board.ruleset_=="classical":
-            # print("now checking check")
             king_positiony=board.piece_lookup["K",color][0].positiony
             king_positionx=board.piece_lookup["K",color][0].positionx
             if color=="white":
@@ -293,7 +289,6 @@ class Rules: #just staticmethods
                     if Rules.is_possible_move(move_to_try,board,justtest=True):
                         return True
                 return False
-            # print("no check detected")
             return False
         
     

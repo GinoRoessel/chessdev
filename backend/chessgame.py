@@ -26,6 +26,7 @@ class ChessGame:
                 self.chessboard_.current_move=self.checking_move(move_to_prove)
                 if self.chessboard_.current_move:
                     self.chessboard_.make_move(self.chessboard_.current_move)
+                    print("made a move")
                     self.chessboard_.current_player="black" if self.chessboard_.current_player=="white" else "white"
                     self.checkthegame()
                     if self.update_gui_ :
