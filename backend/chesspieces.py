@@ -1,4 +1,4 @@
-from base import Base
+from database.base import Base
 import json
 class ChessPieces:
     def __init__(self,color,symbol,guisymbol,positiony=None,positionx=None):

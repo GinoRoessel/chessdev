@@ -1,4 +1,4 @@
-from base import Base
+from database.base import Base
 import tkinter as tk
 from chesspieces import *
 from chessmove import *
@@ -6,8 +6,9 @@ from chessrules import *
 from chessboard import *
 
 class ChessGame:
-    def __init__(self,root):
-        self.chessboard_=ChessBoard() #all data structures
+    def __init__(self,root,session):
+        self.session=session
+        self.chessboard_=ChessBoard(session) #all data structures
         self.chessboard_.setup_board(self)
         #gui functions
         self.setup_gui_=None
@@ -30,10 +31,10 @@ class ChessGame:
                 if self.chessboard_.current_move:
                     self.chessboard_.make_move(self.chessboard_.current_move)
                     print("made a move")
-                    print("beforecheck",self.chessboard_.board[1][5])
+                    # print("beforecheck",self.chessboard_.board[1][5])
                     self.chessboard_.current_player="black" if self.chessboard_.current_player=="white" else "white"
                     self.checkthegame()
-                    print("aftercheck",self.chessboard_.board[1][5])
+                    # print("aftercheck",self.chessboard_.board[1][5])
                     if self.update_gui_ :
                         self.update_gui_(self.chessboard_.current_player,self.chessboard_.status)
                     if self.changes_gui_:

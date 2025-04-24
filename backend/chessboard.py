@@ -1,4 +1,4 @@
-from base import Base
+from database.base import Base
 from sqlalchemy import Column, Integer, String, Boolean
 from chesspieces import *
 from chessmove import *
@@ -197,7 +197,8 @@ class ChessBoard(Base):
     current_move=Column(String,nullable=True)
     move_list=Column(String,nullable=True) 
 
-    def __init__(self):
+    def __init__(self,session):
+        self.session=session
         self._current_move=None
         self._selected_piece=None
         self._move_list=None

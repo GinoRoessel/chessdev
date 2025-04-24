@@ -1,4 +1,4 @@
-from base import Base
+from database.base import Base
 from sqlalchemy import Column, Integer, String, Boolean
 from chesspieces import ChessPieces
 import json
@@ -78,17 +78,20 @@ class ChessMove(Base):
     startposx = Column(Integer)
     endposy = Column(Integer)
     endposx = Column(Integer)
-    piece = Column(String) 
-    captured_piece = Column(String, nullable=True) 
+    _piece = Column("piece",String) 
+    _captured_piece = Column("captured_piece",String, nullable=True) 
     captured_piece_posy = Column(Integer, nullable=True)
     captured_piece_posx = Column(Integer, nullable=True)
     is_enpassant = Column(Boolean, default=False)
     is_castle = Column(Boolean, default=False)
     is_promotion = Column(Boolean, default=False)
-    promotion_choice = Column(String, nullable=True) 
-    castle_secondpiece = Column(String, nullable=True) 
+    _promotion_choice = Column("promotion_choice",String, nullable=True) 
+    _castle_secondpiece = Column("castle_secondpiece",String, nullable=True) 
     castle_secondpiece_posy = Column(Integer, nullable=True)
     castle_secondpiece_posx = Column(Integer, nullable=True)
+
+
+
     def __init__(self,startposy,startposx,endposy,endposx,piece,captured_piece=None,captured_piece_posy=None,captured_piece_posx=None,
                  is_enpassant=False,is_castle=False,is_promotion=False,promotion_choice=None,
                  castle_secondpiece=None,castle_secondpiece_posy=None,castle_secondpiece_posx=None):
@@ -150,7 +153,7 @@ class ChessMove(Base):
     def promotion_choice(self):
         if self._promotion_choice:
             return ChessPieces.from_json(self._promotion_choice)
-        else: 
+        else:
             return None
     
     @promotion_choice.setter
