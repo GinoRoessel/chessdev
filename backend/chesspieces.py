@@ -7,6 +7,17 @@ class ChessPieces:
         self.positionx=positionx
         self.positiony=positiony
         self.symbol=symbol #letter
+
+    def __eq__(self, other):
+        if not isinstance(other, ChessPieces):
+            return False
+        return (
+            self.color == other.color and
+            self.symbol == other.symbol and
+            self.positionx == other.positionx and
+            self.positiony == other.positiony and 
+            self.guisymbol == other.guisymbol
+        )
     
     def __str__(self):
         return self.guisymbol
@@ -55,8 +66,8 @@ class ChessPieces:
         
     @classmethod
     def from_json(cls, json_):
-        dict=json.loads(json_)
-        return cls.from_dict(dict)
+        dict_=json.loads(json_)
+        return ChessPieces.from_dict(dict_)
     
         
 class Queen(ChessPieces):

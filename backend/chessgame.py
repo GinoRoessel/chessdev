@@ -23,12 +23,17 @@ class ChessGame:
             if self.chessboard_.selected_piece!=None:
                 move_to_prove=ChessMove(self.chessboard_.selected_posy,self.chessboard_.selected_posx,r,c,
                                         self.chessboard_.selected_piece)
-                self.chessboard_.current_move=self.checking_move(move_to_prove)
+
+                a2=self.checking_move(move_to_prove)
+                
+                self.chessboard_.current_move=a2
                 if self.chessboard_.current_move:
                     self.chessboard_.make_move(self.chessboard_.current_move)
                     print("made a move")
+                    print("beforecheck",self.chessboard_.board[1][5])
                     self.chessboard_.current_player="black" if self.chessboard_.current_player=="white" else "white"
                     self.checkthegame()
+                    print("aftercheck",self.chessboard_.board[1][5])
                     if self.update_gui_ :
                         self.update_gui_(self.chessboard_.current_player,self.chessboard_.status)
                     if self.changes_gui_:
@@ -37,7 +42,6 @@ class ChessGame:
                             # print("startpos",move_.startposy,move_.startposx)
                             # print("endpos",move_.endposy,move_.endposx)
                             self.changes_gui_(move_.startposy,move_.startposx,self.chessboard_.board[move_.startposy][move_.startposx])
-                            # print(self.chessboard_.board[move_.endposy][move_.endposx])
                             self.changes_gui_(move_.endposy,move_.endposx,self.chessboard_.board[move_.endposy][move_.endposx])
                         elif move_.is_enpassant==True:
                             self.changes_gui_(move_.startposy,move_.startposx,self.chessboard_.board[move_.startposy][move_.startposx])
@@ -72,6 +76,7 @@ class ChessGame:
     
     def checking_move(self,move__): 
         return Rules.is_valid_move(move__,self.chessboard_,self.promotion_choice_)
+        
 
             
     def checkthegame(self): #check or mate?
@@ -90,6 +95,7 @@ class ChessGame:
         self.chessboard_.selected_posx=None
         self.chessboard_.current_player="white"
         self.chessboard_.status=" "
+        self.chessboard_.move_list=[]
         if self.setup_gui_:
             self.setup_gui_(self.chessboard_.ruleset_,self.chessboard_.status,self.chessboard_.current_player)
 

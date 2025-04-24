@@ -78,7 +78,9 @@ class Rules: #just staticmethods
             and move__.startposy==(3 if move__.piece.color=="white" else 4)\
             and board.board[move__.startposy][move__.endposx].color!=move__.piece.color\
             and board.move_list[-1].endposy==move__.startposy\
-            and board.move_list[-1].endposx==move__.endposx:
+            and board.move_list[-1].endposx==move__.endposx\
+            and board.move_list[-1].startposx==move__.endposx\
+            and board.move_list[-1].startposy==move__.endposy+direction:
                 move__.captured_piece=board.board[move__.startposy][move__.endposx]
                 move__.captured_piece_posy=move__.startposy
                 move__.captured_piece_posx=move__.endposx
@@ -171,17 +173,24 @@ class Rules: #just staticmethods
     @staticmethod
     def is_possible_kingmove_classical(move__,board,justtest):
         if abs(move__.startposy-move__.endposy)<=1 and abs(move__.startposx-move__.endposx)<=1:
+            move__.captured_piece=board.board[move__.endposy][move__.endposx]
+            move__.captured_piece_posy=move__.endposy
+            move__.captured_piece_posx=move__.endposx
             return move__
+        print("checking castle")
         #checking castle
         if not any(move__.piece==tup.piece for tup in board.move_list):
             if not Rules.checking_check(move__.piece.color,board): 
+                print("check prevents castle")
                 if move__.piece.color=="white":
+                    print("checking white castle")
                     direction=1 if move__.startposx-move__.endposx<0 else -1
                     if move__.piece.positiony==7 and move__.piece.positionx==4:
                         if abs(move__.startposx-move__.endposx)==2 and move__.endposy==move__.startposy:
                             if direction==1:
                                 if isinstance(board.board[7][7],Rook):
                                     if any(board.board[7][7]==tup.piece for tup in board.move_list):
+                                        print("smth already moved")
                                         return False
                                     for j in range(1,3):
                                         if board.board[move__.endposy][move__.startposx+(direction*j)]!=None:
@@ -270,8 +279,8 @@ class Rules: #just staticmethods
     @staticmethod #if the given color is in check
     def checking_check(color,board):
         if board.ruleset_=="classical":
-            king_positiony=board.piece_lookup["K",color][0].positiony
-            king_positionx=board.piece_lookup["K",color][0].positionx
+            king_positiony=board.piece_lookup[f"K_{color}"][0].positiony
+            king_positionx=board.piece_lookup[f"K_{color}"][0].positionx
             if color=="white":
                 for piece_ in board.blackpieces:
                     # print(piece_)
@@ -298,6 +307,7 @@ class Rules: #just staticmethods
         # print(board.blackpieces)
         # print(len(board.blackpieces))
         if board.ruleset_=="classical":
+            print("checking mate")
             if Rules.checking_check(color,board):
                 if color=="white":
                     for piece in board.whitepieces:
@@ -315,9 +325,13 @@ class Rules: #just staticmethods
                         for r in range(8):
                             for c in range(8):
                                 move_=ChessMove(piece.positiony,piece.positionx,r,c,piece)
+                                print("protectingmove",move_.piece.positiony,move_.piece.positionx,r,c)
+                                print("f7",board.board[1][5])
                                 if Rules.is_valid_move(move_,board,justtest=True):
                                     # print("no checkmate!")
                                     return False
+                                else:
+                                    print("f7",board.board[1][5])
                     # print("checkmate!")
                     return True
             else:
@@ -326,9 +340,14 @@ class Rules: #just staticmethods
     @staticmethod #if move is possible, it does the move and checking for check and take the move back
     def testing_move(move__,board,promotion_choice,justtest=False):
         move__.promotion_choice=(Rook(move__.piece.color)) #just to check if there s a check after
+        print("testing..")
+        print("before making",move__.captured_piece)
         board.make_move(move__)
+        print("before takeback",move__.captured_piece)
+
         if Rules.checking_check(move__.piece.color,board):
             board.take_move_back(move__)
+            print("after takeback",move__.captured_piece)
             move__.promotion_choice=None
             return False
         else:
@@ -346,6 +365,7 @@ class Rules: #just staticmethods
                             move__.promotion_choice=((Bishop(move__.piece.color)))
                         elif choice=="Knight":
                             move__.promotion_choice=((Knight(move__.piece.color)))
+
             return move__
     
     # @staticmethod

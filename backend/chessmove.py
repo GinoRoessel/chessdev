@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, Boolean
 from chesspieces import ChessPieces
 import json
 
-class ChessMove():
+class _ChessMove():
     def __init__(self,startposy,startposx,endposy,endposx,piece,captured_piece=None,captured_piece_posy=None,captured_piece_posx=None,
                  is_enpassant=False,is_castle=False,is_promotion=False,promotion_choice=None,
                  castle_secondpiece=None,castle_secondpiece_posy=None,castle_secondpiece_posx=None):
@@ -70,7 +70,7 @@ class ChessMove():
         dict=json.loads(json_)
         return cls.from_dict(dict)
 
-class _ChessMove(Base):
+class ChessMove(Base):
     __tablename__ = 'chess_moves'
 
     id = Column(Integer, primary_key=True)
@@ -96,7 +96,7 @@ class _ChessMove(Base):
         self._piece = None 
         self._captured_piece = None 
         self._promotion_choice = None  
-        self._castle_second_piece = None  
+        self._castle_secondpiece = None  
 
         self.startposy=startposy
         self.startposx=startposx
@@ -123,7 +123,9 @@ class _ChessMove(Base):
     
     @piece.setter
     def piece(self, piece_):
-        if piece_:
+        if isinstance(piece_,str):
+            self._piece=piece_
+        elif piece_:
             self._piece=piece_.to_json()
         else:
             self._piece=None
@@ -137,7 +139,9 @@ class _ChessMove(Base):
     
     @captured_piece.setter
     def captured_piece(self, piece_):
-        if piece_:
+        if isinstance(piece_,str):
+            self._captured_piece=piece_
+        elif piece_:
             self._captured_piece=piece_.to_json()
         else:
             self._captured_piece=None
@@ -151,39 +155,43 @@ class _ChessMove(Base):
     
     @promotion_choice.setter
     def promotion_choice(self, piece_):
-        if piece_:
+        if isinstance(piece_,str):
+            self._promotion_choice=piece_
+        elif piece_:
             self._promotion_choice=piece_.to_json()
         else:
             self._promotion_choice=None
 
     @property
-    def castle_second_piece(self):
-        if self._castle_second_piece:
-            return ChessPieces.from_json(self._castle_second_piece)
+    def castle_secondpiece(self):
+        if self._castle_secondpiece:
+            return ChessPieces.from_json(self._castle_secondpiece)
         else:
             return None
     
-    @castle_second_piece.setter
-    def castle_second_piece(self, piece_):
-        if piece_:
-            self._castle_second_piece=piece_.to_json()
+    @castle_secondpiece.setter
+    def castle_secondpiece(self, piece_):
+        if isinstance(piece_,str):
+            self._castle_secondpiece=piece_
+        elif piece_:
+            self._castle_secondpiece=piece_.to_json()
         else:
-            self._castle_second_piece=None
+            self._castle_secondpiece=None
 
     def to_dict(self):
         return {"startposy":self.startposy,
         "startposx":self.startposx,
         "endposy":self.endposy,
         "endposx":self.endposx,
-        "piece":self.piece,
-        "captured_piece":self.captured_piece,
+        "piece":self._piece,
+        "captured_piece":self._captured_piece,
         "captured_piece_posy":self.captured_piece_posy,
         "captured_piece_posx":self.captured_piece_posx,
         "is_enpassant":self.is_enpassant,
         "is_castle":self.is_castle,
         "is_promotion":self.is_promotion,
-        "promotion_choice":self.promotion_choice,
-        "castle_secondpiece":self.castle_secondpiece,
+        "promotion_choice":self._promotion_choice,
+        "castle_secondpiece":self._castle_secondpiece,
         "castle_secondpiece_posy":self.castle_secondpiece_posy,
         "castle_secondpiece_posx":self.castle_secondpiece_posx
         }
