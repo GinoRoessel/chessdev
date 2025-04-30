@@ -10,10 +10,10 @@ class ChessBoard(Base):
 
     id = Column(Integer, primary_key=True)
     gamedata_id=Column(Integer)
-    board=Column(String) 
-    piece_lookup=Column(String,nullable=True) 
-    whitepieces=Column(String,nullable=True) 
-    blackpieces=Column(String,nullable=True) 
+    _board=Column("board",String) 
+    _piece_lookup=Column("piece_lookup",String,nullable=True) 
+    _whitepieces=Column("whitepieces",String,nullable=True) 
+    _blackpieces=Column("blackpieces",String,nullable=True) 
 
     def __init__(self,gamedata_id):
         self.gamedata_id=gamedata_id
@@ -144,8 +144,8 @@ class ChessBoard(Base):
             self.make_single_move(p_move)
             # print("promo choice",move_.promotion_choice)
             self.make_single_move(ChessMove(self.id,None,None,move_.endposy,move_.endposx,move_.promotion_choice))
-        session.add(move_)
-        session.commit()
+        # session.add(move_)
+        # session.commit()
         print("micro made a move")
 
 

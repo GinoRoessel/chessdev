@@ -5,18 +5,21 @@ from chessmove import *
 from chessrules import *
 from chessboard import *
 from chessgamedata import *
+from sqlalchemy import select
 
 class ChessGame:
     def __init__(self,root,session):
         self.session=session
-        self.chessgamedata=ChessGameData(self.session)
+        self.chessgamedata=ChessGameData()
+        self.session.add(self.chessgamedata)
+        self.session.commit()
         self.chessboard_=ChessBoard(self.chessgamedata.id) #all data structures
         self.chessboard_.setup_board(self,self.chessgamedata.ruleset_)
-        self.session.add(self.chessgamedata)
         self.session.add(self.chessboard_)
         self.session.commit()
         #gui functions
         self.setup_gui_=None
+        self.synchro_gui_=None
         self.update_gui_=None
         self.changes_gui_=None
         self.promotion_choice_=None
@@ -33,6 +36,8 @@ class ChessGame:
                 if self.chessgamedata.current_move:
                     self.chessboard_.make_move(self.session,self.chessgamedata.current_move)
                     print("made a move")
+                    self.session.add(self.chessgamedata.current_move)
+                    self.session.commit()
                     # print("beforecheck",self.chessboard_.board[1][5])
                     self.chessgamedata.current_player="black" if self.chessgamedata.current_player=="white" else "white"
                     self.checkthegame()
@@ -93,25 +98,87 @@ class ChessGame:
             self.chessgamedata.status=" "
 
     def restartgame(self): #new game
-        new_gamedata=ChessGameData(self.session)
+        new_gamedata=ChessGameData()
         self.chessgamedata=new_gamedata
-        new_board=ChessBoard(self.session,new_gamedata.id)
+        self.session.add(self.chessgamedata)
+        self.session.commit()
+        new_board=ChessBoard(new_gamedata.id)
         self.chessboard_=new_board
         self.chessboard_.setup_board(self,self.chessgamedata.ruleset_) 
-        self.chessgamedata.selected_piece=None
-        self.chessgamedata.selected_posy=None
-        self.chessgamedata.selected_posx=None
-        self.chessgamedata.current_player="white"
-        self.chessgamedata.status=" "
+        # self.chessgamedata.selected_piece=None
+        # self.chessgamedata.selected_posy=None
+        # self.chessgamedata.selected_posx=None
+        # self.chessgamedata.current_player="white"
+        # self.chessgamedata.status=" "
         # self.chessboard_.move_list=[]
-        self.session.add(self.chessgamedata)
         self.session.add(self.chessboard_)
         self.session.commit()
-        if self.setup_gui_:
-            self.setup_gui_(self.chessgamedata.ruleset_,self.chessgamedata.status,self.chessgamedata.current_player)
+        if self.synchro_gui_:
+            self.synchro_gui_(self.chessboard_.board,self.chessgamedata.status,self.chessgamedata.current_player)
 
-    def one_game_before(self):
-        pass
+    def nextgame(self):
+        new_next=self.get_nextgame()
+        if new_next[0] and new_next[1]:
+            self.chessgamedata=new_next[0]
+            self.chessboard_=new_next[1]
+            if self.synchro_gui_:
+                self.synchro_gui_(self.chessboard_.board,self.chessgamedata.status,self.chessgamedata.current_player)
+        else:
+            print("no next game")
+
+    def get_nextgame(self):
+        new_next_gamedata=self.get_next_game_gamedata()
+        if new_next_gamedata:
+            new_next_board=self.get_last_game_board(new_next_gamedata.id)
+            return new_next_gamedata,new_next_board
+        else:
+            return None,None
+
+    def get_next_game_gamedata(self):
+        return self.session.execute(
+            select(ChessGameData)
+            .where(ChessGameData.id > self.chessgamedata.id)
+            .order_by(ChessGameData.id.asc())
+            .limit(1)
+        ).scalar_one_or_none()
+    
+    def get_next_game_board(self, gamedata_id_):
+        return self.session.execute(
+            select(ChessBoard).where(ChessBoard.gamedata_id== gamedata_id_)
+        ).scalar_one_or_none()
+
+    def lastgame(self):
+        new_old=self.get_lastgame()
+        if new_old[0] and new_old[1]:
+            self.chessgamedata=new_old[0]
+            self.chessboard_=new_old[1]
+            if self.synchro_gui_:
+                self.synchro_gui_(self.chessboard_.board,self.chessgamedata.status,self.chessgamedata.current_player)
+        else: 
+            print("no last game")
+
+    def get_lastgame(self):
+        new_old_gamedata=self.get_last_game_gamedata()
+        if new_old_gamedata:
+            new_old_board=self.get_last_game_board(new_old_gamedata.id)
+            return new_old_gamedata,new_old_board
+        else: 
+            return None,None
+
+
+    def get_last_game_gamedata(self):
+        return self.session.execute(
+            select(ChessGameData)
+            .where(ChessGameData.id < self.chessgamedata.id)
+            .order_by(ChessGameData.id.desc())
+            .limit(1)
+        ).scalar_one_or_none()
+    
+    def get_last_game_board(self, gamedata_id_):
+        return self.session.execute(
+            select(ChessBoard).where(ChessBoard.gamedata_id== gamedata_id_)
+        ).scalar_one_or_none()
+
 
         
         

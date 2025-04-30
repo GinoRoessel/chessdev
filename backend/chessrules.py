@@ -291,7 +291,6 @@ class Rules: #just staticmethods
                     if not isinstance(piece_,King):
                         move_to_try=ChessMove(board.id,piece_.positiony,piece_.positionx,king_positiony,king_positionx,piece_)
                         if Rules.is_possible_move(session,move_to_try,gamedata,board,justtest=True): #..
-                            # print("check detected")
                             return True
                 # print("no check detected")
                 return False
@@ -311,34 +310,52 @@ class Rules: #just staticmethods
         # print(len(board.blackpieces))
         if gamedata.ruleset_=="classical":
             print("checking mate")
-            if Rules.checking_check(session,color,gamedata,board):
-                if color=="white":
-                    for piece in board.whitepieces:
-                        for r in range(8):
-                            for c in range(8):
-                                move_=ChessMove(board.id,piece.positiony,piece.positionx,r,c,piece)
-                                if Rules.is_valid_move(session,move_,gamedata,board,justtest=True):
-                                    return False
-                    
-                    return True
-                if color=="black":
-                    for piece in board.blackpieces:
-                        # print(piece.position)
-                        # print(board.board[1][5])
-                        for r in range(8):
-                            for c in range(8):
-                                move_=ChessMove(board.id,piece.positiony,piece.positionx,r,c,piece)
-                                # print("protectingmove",move_.piece.positiony,move_.piece.positionx,r,c)
-                                # print("f7",board.board[1][5])
-                                if Rules.is_valid_move(session,move_,gamedata,board,justtest=True):
-                                    # print("no checkmate!")
-                                    return False
-                                # else:
-                                #     print("f7",board.board[1][5])
-                    # print("checkmate!")
-                    return True
-            else:
-                return False
+            
+        if color=="white":
+            for piece in board.whitepieces:
+                possible_squares=Rules.get_possible_squares(piece)
+                for sq in possible_squares:
+                    if 0<=sq[0]<=7 and 0<=sq[1]<=7:
+                        move_=ChessMove(board.id,piece.positiony,piece.positionx,sq[0],sq[1],piece)
+                        # print("protectingmove",move_.piece.positiony,move_.piece.positionx,r,c)
+                        # print("f7",board.board[1][5])
+                        if Rules.is_valid_move(session,move_,gamedata,board,justtest=True):
+                            # print("no checkmate!")
+                            return False
+                # for r in range(8):
+                #     for c in range(8):
+                #         move_=ChessMove(board.id,piece.positiony,piece.positionx,r,c,piece)
+                #         if Rules.is_valid_move(session,move_,gamedata,board,justtest=True):
+                #             return False
+            
+            return True
+        if color=="black":
+            for piece in board.blackpieces:
+                # print(piece.position)
+                # print(board.board[1][5])
+                possible_squares=Rules.get_possible_squares(piece)
+                for sq in possible_squares:
+                    if 0<=sq[0]<=7 and 0<=sq[1]<=7:
+                        move_=ChessMove(board.id,piece.positiony,piece.positionx,sq[0],sq[1],piece)
+                        # print("protectingmove",move_.piece.positiony,move_.piece.positionx,r,c)
+                        # print("f7",board.board[1][5])
+                        if Rules.is_valid_move(session,move_,gamedata,board,justtest=True):
+                            # print("no checkmate!")
+                            return False
+                # for r in range(8):
+                #     for c in range(8):
+                #         move_=ChessMove(board.id,piece.positiony,piece.positionx,r,c,piece)
+                #         # print("protectingmove",move_.piece.positiony,move_.piece.positionx,r,c)
+                #         # print("f7",board.board[1][5])
+                #         if Rules.is_valid_move(session,move_,gamedata,board,justtest=True):
+                #             # print("no checkmate!")
+                #             return False
+                #         # else:
+                #         #     print("f7",board.board[1][5])
+            # print("checkmate!")
+            return True
+    
+        return False
     
     @staticmethod #if move is possible, it does the move and checking for check and take the move back
     def testing_move(session,move__,gamedata,board,promotion_choice,justtest=False):
@@ -370,5 +387,129 @@ class Rules: #just staticmethods
                             move__.promotion_choice=((Knight(move__.piece.color)))
 
             return move__
+        
+    def get_possible_squares(piece):
+        if piece:
+            direction=1 if piece.color=="black" else -1
+            if piece.symbol=="P":
+                return [(piece.positiony+direction,piece.positionx),
+                        (piece.positiony+2*direction,piece.positionx),
+                        (piece.positiony+direction,piece.positionx+1),
+                        (piece.positiony+direction,piece.positionx-1)]
+            if piece.symbol=="K":
+                return[(piece.positiony+1,piece.positionx),
+                       (piece.positiony+1,piece.positionx+1),
+                       (piece.positiony+1,piece.positionx-1),
+                       (piece.positiony,piece.positionx+1),
+                       (piece.positiony,piece.positionx-1),
+                       (piece.positiony-1,piece.positionx),
+                       (piece.positiony-1,piece.positionx+1),
+                       (piece.positiony-1,piece.positionx-1),
+                       (piece.positiony,piece.positionx+2),
+                       (piece.positiony,piece.positionx-2)]
+            if piece.symbol=="R":
+                return[(piece.positiony,0),
+                       (piece.positiony,1),
+                       (piece.positiony,2),
+                       (piece.positiony,3),
+                       (piece.positiony,4),
+                       (piece.positiony,5),
+                       (piece.positiony,6),
+                       (piece.positiony,7),
+                       (0,piece.positionx),
+                       (1,piece.positionx),
+                       (2,piece.positionx),
+                       (3,piece.positionx),
+                       (4,piece.positionx),
+                       (5,piece.positionx),
+                       (6,piece.positionx),
+                       (7,piece.positionx)]
+            if piece.symbol=="N":
+                return[(piece.positiony+2,piece.positionx+1),
+                       (piece.positiony+2,piece.positionx-1),
+                       (piece.positiony+1,piece.positionx+2),
+                       (piece.positiony+1,piece.positionx-2),
+                       (piece.positiony-1,piece.positionx+2),
+                       (piece.positiony-1,piece.positionx-2),
+                       (piece.positiony-2,piece.positionx+1),
+                       (piece.positiony-2,piece.positionx+1)]
+            if piece.symbol=="B":
+                return[(piece.positiony+1,piece.positionx+1),
+                       (piece.positiony+1,piece.positionx-1),
+                       (piece.positiony+2,piece.positionx+2),
+                       (piece.positiony+2,piece.positionx-2),
+                       (piece.positiony+3,piece.positionx+3),
+                       (piece.positiony+3,piece.positionx-3),
+                       (piece.positiony+4,piece.positionx+4),
+                       (piece.positiony+4,piece.positionx-4),
+                       (piece.positiony+5,piece.positionx+5),
+                       (piece.positiony+5,piece.positionx-5),
+                       (piece.positiony+6,piece.positionx+6),
+                       (piece.positiony+6,piece.positionx-6),
+                       (piece.positiony+7,piece.positionx+7),
+                       (piece.positiony+7,piece.positionx-7),
+                       (piece.positiony-1,piece.positionx+1),
+                       (piece.positiony-1,piece.positionx-1),
+                       (piece.positiony-2,piece.positionx+2),
+                       (piece.positiony-2,piece.positionx-2),
+                       (piece.positiony-3,piece.positionx+3),
+                       (piece.positiony-3,piece.positionx-3),
+                       (piece.positiony-4,piece.positionx+4),
+                       (piece.positiony-4,piece.positionx-4),
+                       (piece.positiony-5,piece.positionx+5),
+                       (piece.positiony-5,piece.positionx-5),
+                       (piece.positiony-6,piece.positionx+6),
+                       (piece.positiony-6,piece.positionx-6),
+                       (piece.positiony-7,piece.positionx+7),
+                       (piece.positiony-7,piece.positionx-7)
+                       ]
+            if piece.symbol=="Q":
+                return [(piece.positiony+1,piece.positionx+1),
+                       (piece.positiony+1,piece.positionx-1),
+                       (piece.positiony+2,piece.positionx+2),
+                       (piece.positiony+2,piece.positionx-2),
+                       (piece.positiony+3,piece.positionx+3),
+                       (piece.positiony+3,piece.positionx-3),
+                       (piece.positiony+4,piece.positionx+4),
+                       (piece.positiony+4,piece.positionx-4),
+                       (piece.positiony+5,piece.positionx+5),
+                       (piece.positiony+5,piece.positionx-5),
+                       (piece.positiony+6,piece.positionx+6),
+                       (piece.positiony+6,piece.positionx-6),
+                       (piece.positiony+7,piece.positionx+7),
+                       (piece.positiony+7,piece.positionx-7),
+                       (piece.positiony-1,piece.positionx+1),
+                       (piece.positiony-1,piece.positionx-1),
+                       (piece.positiony-2,piece.positionx+2),
+                       (piece.positiony-2,piece.positionx-2),
+                       (piece.positiony-3,piece.positionx+3),
+                       (piece.positiony-3,piece.positionx-3),
+                       (piece.positiony-4,piece.positionx+4),
+                       (piece.positiony-4,piece.positionx-4),
+                       (piece.positiony-5,piece.positionx+5),
+                       (piece.positiony-5,piece.positionx-5),
+                       (piece.positiony-6,piece.positionx+6),
+                       (piece.positiony-6,piece.positionx-6),
+                       (piece.positiony-7,piece.positionx+7),
+                       (piece.positiony-7,piece.positionx-7),
+                       (piece.positiony,0),
+                       (piece.positiony,1),
+                       (piece.positiony,2),
+                       (piece.positiony,3),
+                       (piece.positiony,4),
+                       (piece.positiony,5),
+                       (piece.positiony,6),
+                       (piece.positiony,7),
+                       (0,piece.positionx),
+                       (1,piece.positionx),
+                       (2,piece.positionx),
+                       (3,piece.positionx),
+                       (4,piece.positionx),
+                       (5,piece.positionx),
+                       (6,piece.positionx),
+                       (7,piece.positionx)
+                       ]
+            
+
     
     

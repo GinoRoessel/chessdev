@@ -18,7 +18,7 @@ class ChessGameData(Base):
 
 
 
-    def __init__(self,session):
+    def __init__(self):
         self._current_move=None
         self._selected_piece=None
 

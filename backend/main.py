@@ -18,3 +18,15 @@ if __name__== "__main__":
     root.mainloop() 
      
     ###
+
+# if __name__== "__main__":
+#     delete_tables()
+#     # create_tables()
+#     # session=get_session()
+#     # root=tk.Tk()
+
+#     # game=ChessGame(root,session)
+#     # gui=ChessGUI(root,game)
+#     # root.mainloop() 
+     
+#     # ###

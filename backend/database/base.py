@@ -11,7 +11,7 @@ Base = declarative_base()
 
 DATABASE_URL ="sqlite:///chessdev.db"
 
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL, echo=False)
 
 def delete_tables():
     Base.metadata.drop_all(engine)

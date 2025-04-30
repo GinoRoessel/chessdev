@@ -4,25 +4,50 @@ from chesspieces import *
 class ChessGUI:
     def __init__(self,root,game):
         self.root=root
+        self.topframe=tk.Frame(root)
+        self.topframe.pack()
+        self.bottomframe=tk.Frame(root)
+        self.bottomframe.pack()
+
         #status label
-        self.status_label = tk.Label(self.root, text=" ", font=("Arial", 14), bg="lightgray")
+        self.status_label = tk.Label(self.topframe, text=" ", font=("Arial", 14), bg="lightgray")
         self.status_label.pack(padx=10, pady=10)
         #label of current player
-        self.current_player_label = tk.Label(self.root, text="white's turn", font=("Arial", 14), bg="lightgray")
+        self.current_player_label = tk.Label(self.topframe, text="white's turn", font=("Arial", 14), bg="lightgray")
         self.current_player_label.pack(padx=10, pady=10)
-        self.board_frame = tk.Frame(self.root)
+        self.board_frame = tk.Frame(self.topframe)
         self.board_frame.pack(padx=10, pady=10)
         self.create_gui_board(game)
-        self.setup_gui(game.chessgamedata.ruleset_,game.chessgamedata.status,game.chessgamedata.current_player)
-        self.restartbutton=tk.Button(self.root,
+        self.synchro_gui(game.chessboard_.board,game.chessgamedata.status,game.chessgamedata.current_player)
+        self.restartbutton=tk.Button(self.bottomframe,
                                     bg="grey",
                                     padx=30,
                                     pady=10,
                                     font=('Arial', 16),
                                     command=lambda : game.restartgame())
         self.restartbutton.config(text="restart")
-        self.restartbutton.pack(padx=10, pady=10)
-        game.setup_gui_=self.setup_gui
+        # self.restartbutton.pack(padx=10, pady=10)
+        self.restartbutton.grid(row=0 , column=0)
+        self.lastgamebutton=tk.Button(self.bottomframe,
+                                    bg="grey",
+                                    padx=30,
+                                    pady=10,
+                                    font=('Arial', 16),
+                                    command=lambda : game.lastgame())
+        self.lastgamebutton.config(text="lastgame")
+        # self.lastgamebutton.pack(padx=10, pady=10)
+        self.lastgamebutton.grid(row=0 , column=1)
+        self.nextgamebutton=tk.Button(self.bottomframe,
+                                    bg="grey",
+                                    padx=30,
+                                    pady=10,
+                                    font=('Arial', 16),
+                                    command=lambda : game.nextgame())
+        self.nextgamebutton.config(text="nextgame")
+        # self.nextgamebutton.pack(padx=10, pady=10)
+        self.nextgamebutton.grid(row=0 , column=2)
+        # game.setup_gui_=self.setup_gui
+        game.synchro_gui_=self.synchro_gui
         game.update_gui_=self.gui_update
         game.changes_gui_=self.gui_changes
         game.promotion_choice_=self.promotion_choice
@@ -44,24 +69,38 @@ class ChessGUI:
             self.board_frame.grid_rowconfigure(i, weight=1, uniform="columns")
             self.board_frame.grid_columnconfigure(i, weight=1, uniform="rows")
     
-    def setup_gui(self,ruleset,status,current_player):
+    # def setup_gui(self,ruleset,status,current_player):  #replaced by synchro_gui
+    #     self.current_player_label.config(text=f"{current_player}'s turn")
+    #     self.status_label.config(text=status)
+    #     if ruleset=="classical":
+    #         self.setup_gui_classical()
+    
+    # def setup_gui_classical(self):
+    #     whitepieces=["\u265C","\u265E","\u265D","\u265B","\u265A","\u265D","\u265E","\u265C"]
+    #     blackpieces=["\u265C","\u265E","\u265D","\u265B","\u265A","\u265D","\u265E","\u265C"]
+    #     for i in range(len(whitepieces)):
+    #         self.buttons[7][i].config(text=whitepieces[i],fg="white")
+    #         self.buttons[6][i].config(text="\u265F",fg="white")
+    #         self.buttons[1][i].config(text="\u265F",fg="black")
+    #         self.buttons[0][i].config(text=blackpieces[i],fg="black")
+    #         self.buttons[2][i].config(text=" ")
+    #         self.buttons[3][i].config(text=" ")
+    #         self.buttons[4][i].config(text=" ")
+    #         self.buttons[5][i].config(text=" ")
+
+    def synchro_gui(self,board,status,current_player): #synchro the gui to the board
         self.current_player_label.config(text=f"{current_player}'s turn")
         self.status_label.config(text=status)
-        if ruleset=="classical":
-            self.setup_gui_classical()
-    
-    def setup_gui_classical(self):
-        whitepieces=["\u265C","\u265E","\u265D","\u265B","\u265A","\u265D","\u265E","\u265C"]
-        blackpieces=["\u265C","\u265E","\u265D","\u265B","\u265A","\u265D","\u265E","\u265C"]
-        for i in range(len(whitepieces)):
-            self.buttons[7][i].config(text=whitepieces[i],fg="white")
-            self.buttons[6][i].config(text="\u265F",fg="white")
-            self.buttons[1][i].config(text="\u265F",fg="black")
-            self.buttons[0][i].config(text=blackpieces[i],fg="black")
-            self.buttons[2][i].config(text=" ")
-            self.buttons[3][i].config(text=" ")
-            self.buttons[4][i].config(text=" ")
-            self.buttons[5][i].config(text=" ")
+        for i in range(0,8):
+            for j in range(0,8):
+                p=board[i][j]
+                if p:
+                    text_=p.guisymbol
+                    fg_=p.color
+                else:
+                    text_=" "
+                    fg_=None
+                self.buttons[i][j].config(text=text_,fg=fg_)
 
             
 
