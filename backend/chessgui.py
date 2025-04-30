@@ -13,7 +13,7 @@ class ChessGUI:
         self.board_frame = tk.Frame(self.root)
         self.board_frame.pack(padx=10, pady=10)
         self.create_gui_board(game)
-        self.setup_gui(game.chessboard_.ruleset_,game.chessboard_.status,game.chessboard_.current_player)
+        self.setup_gui(game.chessgamedata.ruleset_,game.chessgamedata.status,game.chessgamedata.current_player)
         self.restartbutton=tk.Button(self.root,
                                     bg="grey",
                                     padx=30,
@@ -65,7 +65,7 @@ class ChessGUI:
 
             
 
-    def gui_update(self,currentplayer,status):#all gui changes after a move
+    def gui_update(self,currentplayer,status):#all gui changes after a move, the text data
         self.current_player_label.config(text=f"{currentplayer}'s turn")
         self.status_label.config(text=status)
 
@@ -76,16 +76,16 @@ class ChessGUI:
         else:
             self.buttons[row][col].config(text=" ")
 
-    def promotion_choice(self,color):
-        self.gui_choice_= tk.StringVar()  # Variable zum Speichern der Auswahl
+    def promotion_choice(self,color): #gui function to select a piece for promotion
+        self.gui_choice_= tk.StringVar()  
 
         self.top = tk.Toplevel(self.root)  
         self.top.title("pawn promotion")
 
-        self.top.update_idletasks()  # Fenstergröße berechnen
+        self.top.update_idletasks()  
         x = self.root.winfo_x() + (self.root.winfo_width() // 2) - (self.top.winfo_reqwidth() // 2)
         y = self.root.winfo_y() + (self.root.winfo_height() // 2) - (self.top.winfo_reqheight() // 2)
-        self.top.geometry(f"+{x}+{y}")  # Fensterposition setzen
+        self.top.geometry(f"+{x}+{y}")  
 
         pieces_ = ["Queen", "Rook", "Bishop", "Knight"]
         symbols_ = ["♛", "♜", "♝", "♞"] if color == "white" else ["♕", "♖", "♗", "♘"]
@@ -98,10 +98,10 @@ class ChessGUI:
                             command=lambda p=piece: self.set_piece(p))
             btn.pack(pady=5, padx=10, fill="x")
 
-        self.top.wait_window()  # Warten, bis der Nutzer eine Auswahl trifft
+        self.top.wait_window()  
         return self.gui_choice_.get()
 
 
-    def set_piece(self,piece):
-        self.gui_choice_.set(piece)  # Auswahl speichern
-        self.top.destroy()  # Fenster schließen
+    def set_piece(self,piece): #part of promotion
+        self.gui_choice_.set(piece)  
+        self.top.destroy()  

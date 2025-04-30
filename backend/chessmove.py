@@ -3,77 +3,11 @@ from sqlalchemy import Column, Integer, String, Boolean
 from chesspieces import ChessPieces
 import json
 
-class _ChessMove():
-    def __init__(self,startposy,startposx,endposy,endposx,piece,captured_piece=None,captured_piece_posy=None,captured_piece_posx=None,
-                 is_enpassant=False,is_castle=False,is_promotion=False,promotion_choice=None,
-                 castle_secondpiece=None,castle_secondpiece_posy=None,castle_secondpiece_posx=None):
-        self.startposy=startposy
-        self.startposx=startposx
-        self.endposy=endposy
-        self.endposx=endposx
-        self.piece=piece
-        self.captured_piece=captured_piece
-        self.captured_piece_posy=captured_piece_posy
-        self.captured_piece_posx=captured_piece_posx
-        self.is_enpassant=is_enpassant
-        self.is_castle=is_castle
-        self.is_promotion=is_promotion
-        self.promotion_choice=promotion_choice
-        self.castle_secondpiece=castle_secondpiece
-        self.castle_secondpiece_posy=castle_secondpiece_posy
-        self.castle_secondpiece_posx=castle_secondpiece_posx
-
-    def to_dict(self):
-        return {"startposy":self.startposy,
-        "startposx":self.startposx,
-        "endposy":self.endposy,
-        "endposx":self.endposx,
-        "piece":self.piece,
-        "captured_piece":self.captured_piece,
-        "captured_piece_posy":self.captured_piece_posy,
-        "captured_piece_posx":self.captured_piece_posx,
-        "is_enpassant":self.is_enpassant,
-        "is_castle":self.is_castle,
-        "is_promotion":self.is_promotion,
-        "promotion_choice":self.promotion_choice,
-        "castle_secondpiece":self.castle_secondpiece,
-        "castle_secondpiece_posy":self.castle_secondpiece_posy,
-        "castle_secondpiece_posx":self.castle_secondpiece_posx
-        }
-
-    @classmethod
-    def from_dict(cls,dict):
-        return cls(
-            startposy=dict["startposy"],
-            startposx=dict["startposx"],
-            endposy=dict["endposy"],
-            endposx=dict["endposx"],
-            piece=dict["piece"],
-            captured_piece=dict["captured_piece"],
-            captured_piece_posy=dict["captured_piece_posy"],
-            captured_piece_posx=dict["captured_piece_posx"],
-            is_enpassant=dict["is_enpassant"],
-            is_castle=dict["is_castle"],
-            is_promotion=dict["is_promotion"],
-            promotion_choice=dict["promotion_choice"],
-            castle_secondpiece=dict["castle_secondpiece"],
-            castle_secondpiece_posy=dict["castle_secondpiece_posy"],
-            castle_secondpiece_posx=dict["castle_secondpiece_posx"]
-            )
-            
-
-    def to_json(self):
-        return json.dumps(self.to_dict())
-
-    @classmethod
-    def from_json(cls, json_):
-        dict=json.loads(json_)
-        return cls.from_dict(dict)
-
 class ChessMove(Base):
     __tablename__ = 'chess_moves'
 
     id = Column(Integer, primary_key=True)
+    board_id =Column(Integer)
     startposy = Column(Integer)
     startposx = Column(Integer)
     endposy = Column(Integer)
@@ -92,7 +26,7 @@ class ChessMove(Base):
 
 
 
-    def __init__(self,startposy,startposx,endposy,endposx,piece,captured_piece=None,captured_piece_posy=None,captured_piece_posx=None,
+    def __init__(self,board_id,startposy,startposx,endposy,endposx,piece,captured_piece=None,captured_piece_posy=None,captured_piece_posx=None,
                  is_enpassant=False,is_castle=False,is_promotion=False,promotion_choice=None,
                  castle_secondpiece=None,castle_secondpiece_posy=None,castle_secondpiece_posx=None):
         
@@ -101,6 +35,7 @@ class ChessMove(Base):
         self._promotion_choice = None  
         self._castle_secondpiece = None  
 
+        self.board_id=board_id
         self.startposy=startposy
         self.startposx=startposx
         self.endposy=endposy
@@ -182,7 +117,8 @@ class ChessMove(Base):
             self._castle_secondpiece=None
 
     def to_dict(self):
-        return {"startposy":self.startposy,
+        return {"board_id":self.board_id,
+        "startposy":self.startposy,
         "startposx":self.startposx,
         "endposy":self.endposy,
         "endposx":self.endposx,
@@ -202,6 +138,7 @@ class ChessMove(Base):
     @classmethod
     def from_dict(cls,dict):
         return cls(
+            board_id=dict["board_id"],
             startposy=dict["startposy"],
             startposx=dict["startposx"],
             endposy=dict["endposy"],
