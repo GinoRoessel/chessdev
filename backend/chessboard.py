@@ -134,16 +134,16 @@ class ChessBoard(Base):
             self.make_single_move(move_)
         elif move_.is_enpassant==True: #enpassant
             self.make_single_move(move_)
-            self.make_single_move(ChessMove(self.id,move_.captured_piece_posy,move_.captured_piece_posx,None,None,move_.captured_piece))
+            self.make_single_move(lightChessMove(self.id,move_.captured_piece_posy,move_.captured_piece_posx,None,None,move_.captured_piece))
         elif move_.is_castle==True: #castle
             self.make_single_move(move_)
-            self.make_single_move(ChessMove(self.id,move_.castle_secondpiece_posy,move_.castle_secondpiece_posx,move_.startposy,(move_.startposx+move_.endposx)//2,move_.castle_secondpiece))
+            self.make_single_move(lightChessMove(self.id,move_.castle_secondpiece_posy,move_.castle_secondpiece_posx,move_.startposy,(move_.startposx+move_.endposx)//2,move_.castle_secondpiece))
         elif move_.is_promotion==True: #promotion
             self.make_single_move(move_)
-            p_move=ChessMove(self.id,self.id,move_.endposy,move_.endposx,None,None,move_.piece)
+            p_move=lightChessMove(self.id,self.id,move_.endposy,move_.endposx,None,None,move_.piece)
             self.make_single_move(p_move)
             # print("promo choice",move_.promotion_choice)
-            self.make_single_move(ChessMove(self.id,None,None,move_.endposy,move_.endposx,move_.promotion_choice))
+            self.make_single_move(lightChessMove(self.id,None,None,move_.endposy,move_.endposx,move_.promotion_choice))
         # session.add(move_)
         # session.commit()
         print("micro made a move")
@@ -166,24 +166,24 @@ class ChessBoard(Base):
             # print("before recreation of captured piece")
             if move_.captured_piece!=None:
                 # print("recreation of captured piece")
-                self.take_single_move_back(ChessMove(self.id,move_.captured_piece_posy,move_.captured_piece_posx,None,None,move_.captured_piece))
+                self.take_single_move_back(lightChessMove(self.id,move_.captured_piece_posy,move_.captured_piece_posx,None,None,move_.captured_piece))
         elif move_.is_enpassant==True: #enpassant
             self.take_single_move_back(move_)
-            self.take_single_move_back(ChessMove(self.id,move_.captured_piece_posy,move_.captured_piece_posx,None,None,move_.captured_piece))
+            self.take_single_move_back(lightChessMove(self.id,move_.captured_piece_posy,move_.captured_piece_posx,None,None,move_.captured_piece))
         elif move_.is_castle==True: #castle
             self.take_single_move_back(move_)
-            self.take_single_move_back(ChessMove(self.id,move_.captured_piece_posy,move_.captured_piece_posx,move_.startposy,(move_.startposx+move_.endposx)//2,move_.castle_secondpiece))
+            self.take_single_move_back(lightChessMove(self.id,move_.captured_piece_posy,move_.captured_piece_posx,move_.startposy,(move_.startposx+move_.endposx)//2,move_.castle_secondpiece))
         elif move_.is_promotion==True: #promotion
-            self.make_single_move(ChessMove(self.id,None,None,move_.endposy,move_.endposx,move_.promotion_choice))
-            p_move=ChessMove(self.id,move_.endposy,move_.endposx,None,None,move_.piece)
+            self.make_single_move(lightChessMove(self.id,None,None,move_.endposy,move_.endposx,move_.promotion_choice))
+            p_move=lightChessMove(self.id,move_.endposy,move_.endposx,None,None,move_.piece)
             self.take_single_move_back(p_move)
             self.take_single_move_back(move_)
             if move_.captured_piece!=None:
-                self.take_single_move_back(ChessMove(self.id,move_.captured_piece_posy,move_.captured_piece_posx,None,None,move_.captured_piece))
-        last_move = session.query(ChessMove).filter_by(board_id=self.id).order_by(ChessMove.id.desc()).first()
-        if last_move:
-            session.delete(last_move)
-            session.commit()
+                self.take_single_move_back(lightChessMove(self.id,move_.captured_piece_posy,move_.captured_piece_posx,None,None,move_.captured_piece))
+        # last_move = session.query(ChessMove).filter_by(board_id=self.id).order_by(ChessMove.id.desc()).first()
+        # if last_move:
+        #     session.delete(last_move)
+        #     session.commit()
         # self.pop_move_list()
             
 

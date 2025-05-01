@@ -72,24 +72,25 @@ class Rules: #just staticmethods
         except AttributeError:
             pass
         #en passant
-        last_move = session.query(ChessMove).filter_by(board_id=board.id).order_by(ChessMove.id.desc()).first()
-        if last_move:
-            try:
-                if (move__.startposx+1==move__.endposx or move__.startposx-1==move__.endposx)\
-                and move__.endposy-move__.startposy==direction\
-                and move__.startposy==(3 if move__.piece.color=="white" else 4)\
-                and board.board[move__.startposy][move__.endposx].color!=move__.piece.color\
-                and last_move.endposy==move__.startposy\
-                and last_move.endposx==move__.endposx\
-                and last_move.startposx==move__.endposx\
-                and last_move.startposy==move__.endposy+direction:
-                    move__.captured_piece=board.board[move__.startposy][move__.endposx]
-                    move__.captured_piece_posy=move__.startposy
-                    move__.captured_piece_posx=move__.endposx
-                    move__.is_enpassant=True
-                    return move__
-            except AttributeError:
-                pass
+        
+        try:
+            if (move__.startposx+1==move__.endposx or move__.startposx-1==move__.endposx)\
+            and move__.endposy-move__.startposy==direction\
+            and move__.startposy==(3 if move__.piece.color=="white" else 4)\
+            and board.board[move__.startposy][move__.endposx].color!=move__.piece.color:
+                last_move = session.query(ChessMove).filter_by(board_id=board.id).order_by(ChessMove.id.desc()).first()
+                if last_move:
+                    if last_move.endposy==move__.startposy\
+                    and last_move.endposx==move__.endposx\
+                    and last_move.startposx==move__.endposx\
+                    and last_move.startposy==move__.endposy+direction:
+                        move__.captured_piece=board.board[move__.startposy][move__.endposx]
+                        move__.captured_piece_posy=move__.startposy
+                        move__.captured_piece_posx=move__.endposx
+                        move__.is_enpassant=True
+                        return move__
+        except AttributeError:
+            pass
 
         return False
             
@@ -181,94 +182,106 @@ class Rules: #just staticmethods
             return move__
         # print("checking castle")
         #checking castle
-        move_list = session.query(ChessMove).filter_by(board_id=board.id).all()
-        if not any(move__.piece==tup.piece for tup in move_list):
-            if not Rules.checking_check(session,move__.piece.color,gamedata,board): 
-                # print("check prevents castle")
-                if move__.piece.color=="white":
-                    # print("checking white castle")
-                    direction=1 if move__.startposx-move__.endposx<0 else -1
-                    if move__.piece.positiony==7 and move__.piece.positionx==4:
-                        if abs(move__.startposx-move__.endposx)==2 and move__.endposy==move__.startposy:
-                            if direction==1:
-                                if isinstance(board.board[7][7],Rook):
-                                    if any(board.board[7][7]==tup.piece for tup in move_list):
-                                        # print("smth already moved")
-                                        return False
-                                    for j in range(1,3):
-                                        if board.board[move__.endposy][move__.startposx+(direction*j)]!=None:
-                                            return False
-                                        for p in board.blackpieces:
-                                            move_=ChessMove(board.id,p.positiony,p.positionx,move__.endposy,move__.startposx+(direction*j),p)
-                                            if Rules.is_possible_move(session,move_,gamedata,board,justtest=True):
-                                                return False
-                                    
-                                    move__.castle_secondpiece=board.board[7][7]  
-                                    move__.castle_secondpiece_posy=7     
-                                    move__.castle_secondpiece_posx=7     
-                                else:
+
+        if not Rules.checking_check(session,move__.piece.color,gamedata,board): 
+            # print("check prevents castle")
+            if move__.piece.color=="white":
+                # print("checking white castle")
+                direction=1 if move__.startposx-move__.endposx<0 else -1
+                if move__.piece.positiony==7 and move__.piece.positionx==4:
+                    if abs(move__.startposx-move__.endposx)==2 and move__.endposy==move__.startposy:
+                        if direction==1:
+                            if isinstance(board.board[7][7],Rook):
+                                move_list = session.query(ChessMove).filter_by(board_id=board.id).all()
+                                print("ÜÜÜ",len(move_list))
+                                if any(move__.piece==tup.piece for tup in move_list):
                                     return False
-                            elif direction==-1:
-                                if isinstance(board.board[7][0],Rook):
-                                    if any(board.board[7][0]==tup.piece for tup in move_list):
-                                        return False
-                                    for j in range(1,4):
-                                        if board.board[move__.endposy][move__.startposx+(direction*j)]!=None:
-                                            return False
-                                        for p in board.blackpieces:
-                                            move_=ChessMove(board.id,p.positiony,p.positionx,move__.endposy,move__.startposx+(direction*j),p)
-                                            if Rules.is_possible_move(session,move_,gamedata,board,justtest=True):
-                                                return False
-                                    
-                                    move__.castle_secondpiece=board.board[7][0]
-                                    move__.castle_secondpiece_posy=7  
-                                    move__.castle_secondpiece_posx=0   
-                                else:
+                                if any(board.board[7][7]==tup.piece for tup in move_list):
+                                    # print("smth already moved")
                                     return False
-                            print("its a castle")
-                            move__.is_castle=True
-                            return move__
-                if move__.piece.color=="black":
-                    direction=1 if move__.startposx-move__.endposx<0 else -1
-                    if move__.piece.positiony==0 and move__.piece.positionx==4:
-                        if abs(move__.startposx-move__.endposx)==2 and move__.endposy==move__.startposy:
-                            if direction==1:
-                                if isinstance(board.board[0][7],Rook):
-                                    if any(board.board[0][7]==tup.piece for tup in move_list):
+                                for j in range(1,3):
+                                    if board.board[move__.endposy][move__.startposx+(direction*j)]!=None:
                                         return False
-                                    for j in range(1,3):    
-                                        if board.board[move__.endposy][move__.startposx+direction*j]!=None:
+                                    for p in board.blackpieces:
+                                        move_=ChessMove(board.id,p.positiony,p.positionx,move__.endposy,move__.startposx+(direction*j),p)
+                                        if Rules.is_possible_move(session,move_,gamedata,board,justtest=True):
                                             return False
-                                        for p in board.whitepieces:
-                                            move_=ChessMove(board.id,p.positiony,p.positionx,move__.endposy,move__.startposx+(direction*j),p)
-                                            if Rules.is_possible_move(session,move_,gamedata,board,justtest=True):
-                                                return False
-                                    
-                                    move__.castle_secondpiece=board.board[0][7] 
-                                    move__.castle_secondpiece_posy=0
-                                    move__.castle_secondpiece_posx=7
-                                else:
+                                
+                                move__.castle_secondpiece=board.board[7][7]  
+                                move__.castle_secondpiece_posy=7     
+                                move__.castle_secondpiece_posx=7     
+                            else:
+                                return False
+                        elif direction==-1:
+                            if isinstance(board.board[7][0],Rook):
+                                move_list = session.query(ChessMove).filter_by(board_id=board.id).all()
+                                if any(move__.piece==tup.piece for tup in move_list):
                                     return False
-                            elif direction==-1:
-                                if isinstance(board.board[0][0],Rook):
-                                    if any(board.board[0][0]==tup.piece for tup in move_list):
+                                if any(board.board[7][0]==tup.piece for tup in move_list):
+                                    return False
+                                for j in range(1,4):
+                                    if board.board[move__.endposy][move__.startposx+(direction*j)]!=None:
                                         return False
-                                    for j in range(1,4):
-                                        if board.board[move__.endposy][move__.startposx+direction*j]!=None:
+                                    for p in board.blackpieces:
+                                        move_=lightChessMove(board.id,p.positiony,p.positionx,move__.endposy,move__.startposx+(direction*j),p)
+                                        if Rules.is_possible_move(session,move_,gamedata,board,justtest=True):
                                             return False
-                                        for p in board.whitepieces:
-                                            move_=ChessMove(board.id,p.positiony,p.positionx,move__.endposy,move__.startposx+(direction*j),p)
-                                            if Rules.is_possible_move(session,move_,gamedata,board,justtest=True):
-                                                return False
-                                    
-                                    move__.castle_secondpiece=board.board[0][0]
-                                    move__.castle_secondpiece_posy=0  
-                                    move__.castle_secondpiece_posx=0 
-                                else: 
+                                
+                                move__.castle_secondpiece=board.board[7][0]
+                                move__.castle_secondpiece_posy=7  
+                                move__.castle_secondpiece_posx=0   
+                            else:
+                                return False
+                        print("its a castle")
+                        move__.is_castle=True
+                        return move__
+            if move__.piece.color=="black":
+                direction=1 if move__.startposx-move__.endposx<0 else -1
+                if move__.piece.positiony==0 and move__.piece.positionx==4:
+                    if abs(move__.startposx-move__.endposx)==2 and move__.endposy==move__.startposy:
+                        if direction==1:
+                            if isinstance(board.board[0][7],Rook):
+                                move_list = session.query(ChessMove).filter_by(board_id=board.id).all()
+                                if any(move__.piece==tup.piece for tup in move_list):
                                     return False
-                            
-                            move__.is_castle=True
-                            return move__
+                                if any(board.board[0][7]==tup.piece for tup in move_list):
+                                    return False
+                                for j in range(1,3):    
+                                    if board.board[move__.endposy][move__.startposx+direction*j]!=None:
+                                        return False
+                                    for p in board.whitepieces:
+                                        move_=lightChessMove(board.id,p.positiony,p.positionx,move__.endposy,move__.startposx+(direction*j),p)
+                                        if Rules.is_possible_move(session,move_,gamedata,board,justtest=True):
+                                            return False
+                                
+                                move__.castle_secondpiece=board.board[0][7] 
+                                move__.castle_secondpiece_posy=0
+                                move__.castle_secondpiece_posx=7
+                            else:
+                                return False
+                        elif direction==-1:
+                            if isinstance(board.board[0][0],Rook):
+                                if any(board.board[0][0]==tup.piece for tup in move_list):
+                                    return False
+                                move_list = session.query(ChessMove).filter_by(board_id=board.id).all()
+                                if any(move__.piece==tup.piece for tup in move_list):
+                                    return False
+                                for j in range(1,4):
+                                    if board.board[move__.endposy][move__.startposx+direction*j]!=None:
+                                        return False
+                                    for p in board.whitepieces:
+                                        move_=lightChessMove(board.id,p.positiony,p.positionx,move__.endposy,move__.startposx+(direction*j),p)
+                                        if Rules.is_possible_move(session,move_,gamedata,board,justtest=True):
+                                            return False
+                                
+                                move__.castle_secondpiece=board.board[0][0]
+                                move__.castle_secondpiece_posy=0  
+                                move__.castle_secondpiece_posx=0 
+                            else: 
+                                return False
+                        
+                        move__.is_castle=True
+                        return move__
         return False
 
     @staticmethod #if endsquare has an own piece on it
@@ -289,14 +302,14 @@ class Rules: #just staticmethods
                     # print(piece_)
                     # print(piece_.position)
                     if not isinstance(piece_,King):
-                        move_to_try=ChessMove(board.id,piece_.positiony,piece_.positionx,king_positiony,king_positionx,piece_)
+                        move_to_try=lightChessMove(board.id,piece_.positiony,piece_.positionx,king_positiony,king_positionx,piece_)
                         if Rules.is_possible_move(session,move_to_try,gamedata,board,justtest=True): #..
                             return True
                 # print("no check detected")
                 return False
             if color=="black":
                 for piece_ in board.whitepieces:
-                    move_to_try=ChessMove(board.id,piece_.positiony,piece_.positionx,king_positiony,king_positionx,piece_)
+                    move_to_try=lightChessMove(board.id,piece_.positiony,piece_.positionx,king_positiony,king_positionx,piece_)
                     if Rules.is_possible_move(session,move_to_try,gamedata,board,justtest=True):
                         return True
                 return False
@@ -316,7 +329,7 @@ class Rules: #just staticmethods
                 possible_squares=Rules.get_possible_squares(piece)
                 for sq in possible_squares:
                     if 0<=sq[0]<=7 and 0<=sq[1]<=7:
-                        move_=ChessMove(board.id,piece.positiony,piece.positionx,sq[0],sq[1],piece)
+                        move_=lightChessMove(board.id,piece.positiony,piece.positionx,sq[0],sq[1],piece)
                         # print("protectingmove",move_.piece.positiony,move_.piece.positionx,r,c)
                         # print("f7",board.board[1][5])
                         if Rules.is_valid_move(session,move_,gamedata,board,justtest=True):
@@ -336,7 +349,7 @@ class Rules: #just staticmethods
                 possible_squares=Rules.get_possible_squares(piece)
                 for sq in possible_squares:
                     if 0<=sq[0]<=7 and 0<=sq[1]<=7:
-                        move_=ChessMove(board.id,piece.positiony,piece.positionx,sq[0],sq[1],piece)
+                        move_=lightChessMove(board.id,piece.positiony,piece.positionx,sq[0],sq[1],piece)
                         # print("protectingmove",move_.piece.positiony,move_.piece.positionx,r,c)
                         # print("f7",board.board[1][5])
                         if Rules.is_valid_move(session,move_,gamedata,board,justtest=True):

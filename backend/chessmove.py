@@ -164,3 +164,27 @@ class ChessMove(Base):
     def from_json(cls, json_):
         dict=json.loads(json_)
         return cls.from_dict(dict)
+    
+
+
+class lightChessMove():
+    def __init__(self,board_id,startposy,startposx,endposy,endposx,piece,captured_piece=None,captured_piece_posy=None,captured_piece_posx=None,
+                 is_enpassant=False,is_castle=False,is_promotion=False,promotion_choice=None,
+                 castle_secondpiece=None,castle_secondpiece_posy=None,castle_secondpiece_posx=None): 
+
+        self.board_id=board_id
+        self.startposy=startposy
+        self.startposx=startposx
+        self.endposy=endposy
+        self.endposx=endposx
+        self.piece=piece
+        self.captured_piece=captured_piece
+        self.captured_piece_posy=captured_piece_posy
+        self.captured_piece_posx=captured_piece_posx
+        self.is_enpassant=is_enpassant
+        self.is_castle=is_castle
+        self.is_promotion=is_promotion
+        self.promotion_choice=promotion_choice
+        self.castle_secondpiece=castle_secondpiece
+        self.castle_secondpiece_posy=castle_secondpiece_posy
+        self.castle_secondpiece_posx=castle_secondpiece_posx
