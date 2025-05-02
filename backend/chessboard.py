@@ -8,24 +8,30 @@ from itertools import chain
 class ChessBoard(Base):
     __tablename__ = 'chess_boards'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     gamedata_id=Column(Integer)
     _board=Column("board",String) 
     _piece_lookup=Column("piece_lookup",String,nullable=True) 
     _whitepieces=Column("whitepieces",String,nullable=True) 
     _blackpieces=Column("blackpieces",String,nullable=True) 
+    _current_move=Column("current_move",String,nullable=True)
+    is_replay=Column(Boolean,default=False)
+    
 
-    def __init__(self,gamedata_id):
+    def __init__(self,gamedata_id,is_replay=False):
         self.gamedata_id=gamedata_id
         self._whitepieces=None
         self._blackpieces=None
         self._piece_lookup=None
         self._board=None
+        self._current_move=None
 
         self.create_board() #just create the matrix
         self.piece_lookup=defaultdict(list) #to lookup position of certain pieces
         self.whitepieces=[] #to iterate to all the pieces of the color
         self.blackpieces=[]
+        self.current_move=None
+        self.is_replay=is_replay
 
     
 
@@ -92,6 +98,19 @@ class ChessBoard(Base):
         else:
             self._blackpieces=json.dumps([])
 
+    @property
+    def current_move(self):
+        if self._current_move:
+            return ChessMove.from_json(self._current_move)
+        else:
+            return None
+    
+    @current_move.setter
+    def current_move(self, c_move):
+        if c_move:
+            self._current_move=c_move.to_json()
+        else:
+            self._current_move=None
 
     def create_board(self):
         self.board=[[None for _ in range(8)] for _ in range(8)] #main data structure

@@ -13,14 +13,13 @@ class ChessGameData(Base):
     selected_posx=Column(Integer,nullable=True)
     current_player=Column(String)
     status=Column(String,nullable=True)
-    _current_move=Column("current_move",String,nullable=True)
     chessgame_ended=Column(Boolean, default=False)
 
 
 
 
     def __init__(self):
-        self._current_move=None
+
         self._selected_piece=None
 
         self.ruleset_="classical"
@@ -29,7 +28,6 @@ class ChessGameData(Base):
         self.selected_posx=None
         self.current_player="white"
         self.status=" "
-        self.current_move=None
         self.chessgame_ended=False
 
 
@@ -47,16 +45,3 @@ class ChessGameData(Base):
         else:
             self._selected_piece=None
 
-    @property
-    def current_move(self):
-        if self._current_move:
-            return ChessMove.from_json(self._current_move)
-        else:
-            return None
-    
-    @current_move.setter
-    def current_move(self, c_move):
-        if c_move:
-            self._current_move=c_move.to_json()
-        else:
-            self._current_move=None
