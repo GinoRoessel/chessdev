@@ -6,6 +6,7 @@ from chessrules import *
 from chessboard import *
 from chessgamedata import *
 from sqlalchemy import select
+import copy
 
 class ChessGame:
     def __init__(self,root,session):
@@ -17,6 +18,8 @@ class ChessGame:
         self.chessboard_.setup_board(self,self.chessgamedata.ruleset_)
         self.session.add(self.chessboard_)
         self.session.commit()
+        self.replay_board=None
+        self.replay_current_move=None
         #gui functions
         self.setup_gui_=None
         self.synchro_gui_=None
@@ -35,12 +38,17 @@ class ChessGame:
                 self.chessgamedata.current_move=self.checking_move(move_to_prove)
                 if self.chessgamedata.current_move:
                     self.chessboard_.make_move(self.session,self.chessgamedata.current_move)
+                    cmove=self.chessgamedata.current_move
                     print("made a move")
-                    self.session.add(self.chessgamedata.current_move)
+                    self.session.add(cmove)
                     self.session.commit()
+                    self.chessgamedata.current_move=cmove
+                    print("PPPPP",self.chessgamedata.current_move.id)
                     # print("beforecheck",self.chessboard_.board[1][5])
                     self.chessgamedata.current_player="black" if self.chessgamedata.current_player=="white" else "white"
                     self.checkthegame()
+                    if self.chessgamedata.chessgame_ended==True:
+                        self.replay_game_mode()
                     self.session.commit()
                     # print("aftercheck",self.chessboard_.board[1][5])
                     if self.update_gui_ :
@@ -92,6 +100,7 @@ class ChessGame:
         if Rules.checking_check(self.session,self.chessgamedata.current_player,self.chessgamedata,self.chessboard_):
             if Rules.checking_mate(self.session,self.chessgamedata.current_player,self.chessgamedata,self.chessboard_):
                 self.chessgamedata.status=f"{self.chessgamedata.current_player} is mated, game over"
+                self.chessgamedata.chessgame_ended=True
             else :
                 self.chessgamedata.status=f"{self.chessgamedata.current_player} is in check"         
         else:
@@ -180,6 +189,89 @@ class ChessGame:
         ).scalar_one_or_none()
 
 
-        
+    def replay_game_mode(self):
+        self.replay_board=copy.deepcopy(self.chessboard_)
+        self.replay_current_move=self.session.execute(
+                                        select(ChessMove)
+                                        .where(ChessMove.board_id == self.chessboard_.id)
+                                        .order_by(ChessMove.id.desc())
+                                        .limit(1)
+                                    ).scalar_one_or_none()
+
+    def lastmove(self):
+        move_=self.get_last_move()
+        if move_:
+            self.replay_board.take_move_back(self.session,move_)
+            if self.changes_gui_:
+                    if move_.is_enpassant==False and move_.is_castle==False and move_.is_promotion==False:
+                        # print("startpos",move_.startposy,move_.startposx)
+                        # print("endpos",move_.endposy,move_.endposx)
+                        self.changes_gui_(move_.startposy,move_.startposx,self.replay_board.board[move_.startposy][move_.startposx])
+                        self.changes_gui_(move_.endposy,move_.endposx,self.replay_board.board[move_.endposy][move_.endposx])
+                    elif move_.is_enpassant==True:
+                        self.changes_gui_(move_.startposy,move_.startposx,self.replay_board.board[move_.startposy][move_.startposx])
+                        self.changes_gui_(move_.endposy,move_.endposx,self.replay_board.board[move_.endposy][move_.endposx])
+                        self.changes_gui_(move_.captured_piece.positiony,move_.captured_piece.positionx,self.replay_board.board[move_.captured_piece_posy][move_.captured_piece_posx])
+                    elif move_.is_castle==True:
+                        self.changes_gui_(move_.startposy,move_.startposx,self.replay_board.board[move_.startposy][move_.startposx])
+                        self.changes_gui_(move_.endposy,move_.endposx,self.replay_board.board[move_.endposy][move_.endposx])
+                        self.changes_gui_(move_.castle_secondpiece_posy,move_.castle_secondpiece_posx,self.replay_board.board[move_.castle_secondpiece_posy][move_.castle_secondpiece_posx])
+                        self.changes_gui_(move_.startposy,(move_.startposx+move_.endposx)//2,self.replay_board.board[move_.startposy][(move_.startposx+move_.endposx)//2])
+                    elif move_.is_promotion==True:
+                        self.changes_gui_(move_.startposy,move_.startposx,self.replay_board.board[move_.startposy][move_.startposx])
+                        self.changes_gui_(move_.endposy,move_.endposx,self.replay_board.board[move_.endposy][move_.endposx])
+            self.replay_current_move=self.session.execute(
+                                        select(ChessMove)
+                                        .where(ChessMove.board_id == self.chessboard_.id,
+                                            ChessMove.id<self.replay_current_move.id)
+                                        .order_by(ChessMove.id.desc())
+                                        .limit(1)
+                                    ).scalar_one_or_none()
+
+    def get_last_move(self):
+        return self.replay_current_move
+    
+
+    def nextmove(self):
+        move_=self.get_next_move()
+        if move_:
+            self.replay_board.make_move(self.session,move_)
+            if self.changes_gui_:
+                    if move_.is_enpassant==False and move_.is_castle==False and move_.is_promotion==False:
+                        # print("startpos",move_.startposy,move_.startposx)
+                        # print("endpos",move_.endposy,move_.endposx)
+                        self.changes_gui_(move_.startposy,move_.startposx,self.replay_board.board[move_.startposy][move_.startposx])
+                        self.changes_gui_(move_.endposy,move_.endposx,self.replay_board.board[move_.endposy][move_.endposx])
+                    elif move_.is_enpassant==True:
+                        self.changes_gui_(move_.startposy,move_.startposx,self.replay_board.board[move_.startposy][move_.startposx])
+                        self.changes_gui_(move_.endposy,move_.endposx,self.replay_board.board[move_.endposy][move_.endposx])
+                        self.changes_gui_(move_.captured_piece.positiony,move_.captured_piece.positionx,self.replay_board.board[move_.captured_piece_posy][move_.captured_piece_posx])
+                    elif move_.is_castle==True:
+                        self.changes_gui_(move_.startposy,move_.startposx,self.replay_board.board[move_.startposy][move_.startposx])
+                        self.changes_gui_(move_.endposy,move_.endposx,self.replay_board.board[move_.endposy][move_.endposx])
+                        self.changes_gui_(move_.castle_secondpiece_posy,move_.castle_secondpiece_posx,self.replay_board.board[move_.castle_secondpiece_posy][move_.castle_secondpiece_posx])
+                        self.changes_gui_(move_.startposy,(move_.startposx+move_.endposx)//2,self.replay_board.board[move_.startposy][(move_.startposx+move_.endposx)//2])
+                    elif move_.is_promotion==True:
+                        self.changes_gui_(move_.startposy,move_.startposx,self.replay_board.board[move_.startposy][move_.startposx])
+                        self.changes_gui_(move_.endposy,move_.endposx,self.replay_board.board[move_.endposy][move_.endposx])
+            self.replay_current_move=move_
+
+    def get_next_move(self):
+        if self.replay_current_move:
+            return self.session.execute(
+                                            select(ChessMove)
+                                            .where(ChessMove.board_id == self.chessboard_.id,
+                                                ChessMove.id>self.replay_current_move.id)
+                                            .order_by(ChessMove.id.asc())
+                                            .limit(1)
+                                        ).scalar_one_or_none()
+        else:
+            return self.session.execute(
+                                            select(ChessMove)
+                                            .where(ChessMove.board_id == self.chessboard_.id)
+                                            .order_by(ChessMove.id.asc())
+                                            .limit(1)
+                                        ).scalar_one_or_none()
+
         
 

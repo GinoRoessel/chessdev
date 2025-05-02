@@ -8,12 +8,13 @@ class ChessGameData(Base):
     __tablename__ = 'chessgame_data'
     id = Column(Integer, primary_key=True)
     ruleset_=Column(String)
-    selected_piece=Column(String,nullable=True) 
+    _selected_piece=Column("selected_piece",String,nullable=True) 
     selected_posy=Column(Integer,nullable=True)
     selected_posx=Column(Integer,nullable=True)
     current_player=Column(String)
     status=Column(String,nullable=True)
-    current_move=Column(String,nullable=True)
+    _current_move=Column("current_move",String,nullable=True)
+    chessgame_ended=Column(Boolean, default=False)
 
 
 
@@ -29,6 +30,7 @@ class ChessGameData(Base):
         self.current_player="white"
         self.status=" "
         self.current_move=None
+        self.chessgame_ended=False
 
 
     @property

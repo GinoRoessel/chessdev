@@ -46,6 +46,22 @@ class ChessGUI:
         self.nextgamebutton.config(text="nextgame")
         # self.nextgamebutton.pack(padx=10, pady=10)
         self.nextgamebutton.grid(row=0 , column=2)
+        self.lastmovebutton=tk.Button(self.bottomframe,
+                                    bg="grey",
+                                    padx=30,
+                                    pady=10,
+                                    font=('Arial', 16),
+                                    command=lambda : game.lastmove())
+        self.lastmovebutton.config(text="lastmove")
+        self.lastmovebutton.grid(row=0 , column=3)
+        self.nextmovebutton=tk.Button(self.bottomframe,
+                                    bg="grey",
+                                    padx=30,
+                                    pady=10,
+                                    font=('Arial', 16),
+                                    command=lambda : game.nextmove())
+        self.nextmovebutton.config(text="nextmove")
+        self.nextmovebutton.grid(row=0 , column=4)
         # game.setup_gui_=self.setup_gui
         game.synchro_gui_=self.synchro_gui
         game.update_gui_=self.gui_update

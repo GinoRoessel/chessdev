@@ -6,8 +6,8 @@ import json
 class ChessMove(Base):
     __tablename__ = 'chess_moves'
 
-    id = Column(Integer, primary_key=True)
-    board_id =Column(Integer)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    board_id =Column(Integer, nullable=False)
     startposy = Column(Integer)
     startposx = Column(Integer)
     endposy = Column(Integer)
@@ -34,6 +34,7 @@ class ChessMove(Base):
         self._captured_piece = None 
         self._promotion_choice = None  
         self._castle_secondpiece = None  
+
 
         self.board_id=board_id
         self.startposy=startposy
@@ -132,12 +133,13 @@ class ChessMove(Base):
         "promotion_choice":self._promotion_choice,
         "castle_secondpiece":self._castle_secondpiece,
         "castle_secondpiece_posy":self.castle_secondpiece_posy,
-        "castle_secondpiece_posx":self.castle_secondpiece_posx
+        "castle_secondpiece_posx":self.castle_secondpiece_posx,
+        "id":self.id
         }
 
     @classmethod
     def from_dict(cls,dict):
-        return cls(
+        mv= cls(
             board_id=dict["board_id"],
             startposy=dict["startposy"],
             startposx=dict["startposx"],
@@ -153,8 +155,10 @@ class ChessMove(Base):
             promotion_choice=dict["promotion_choice"],
             castle_secondpiece=dict["castle_secondpiece"],
             castle_secondpiece_posy=dict["castle_secondpiece_posy"],
-            castle_secondpiece_posx=dict["castle_secondpiece_posx"]
+            castle_secondpiece_posx=dict["castle_secondpiece_posx"],
             )
+        mv.id=dict["id"]
+        return mv
             
 
     def to_json(self):
