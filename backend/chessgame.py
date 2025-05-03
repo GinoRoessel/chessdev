@@ -10,15 +10,25 @@ from database.base import Base, create_tables,delete_tables, get_session
 import copy
 
 class ChessGame:
-    def __init__(self,root,session):
-        self.session=session
-        self.chessgamedata=ChessGameData()
-        self.session.add(self.chessgamedata)
-        self.session.commit()
-        self.chessboard_=ChessBoard(self.chessgamedata.id) #all data structures
-        self.chessboard_.setup_board(self,self.chessgamedata.ruleset_)
-        self.session.add(self.chessboard_)
-        self.session.commit()
+    def __init__(self,root=None,session=None,cgdata=None,cb=None):
+        self.session=None
+        if session:
+            self.session=session
+        if not cgdata:
+            self.chessgamedata=ChessGameData()
+            if session:
+                self.session.add(self.chessgamedata)
+                self.session.commit()
+        else:
+            self.chessgamedata=cgdata
+        if not cb:
+            self.chessboard_=ChessBoard(self.chessgamedata.id) #all data structures
+            self.chessboard_.setup_board(self,self.chessgamedata.ruleset_)
+            if session:
+                self.session.add(self.chessboard_)
+                self.session.commit()
+        else:
+            self.chessboard_=cb
         #gui functions
         self.setup_gui_=None
         self.synchro_gui_=None
@@ -39,17 +49,19 @@ class ChessGame:
                     self.chessboard_.make_move(self.session,self.chessboard_.current_move)
                     cmove=self.chessboard_.current_move
                     print("made a move")
-                    self.session.add(cmove)
-                    self.session.commit()
+                    if self.session:
+                        self.session.add(cmove)
+                        self.session.commit()
                     self.chessboard_.current_move=cmove
-                    print("PPPPP",self.chessboard_.current_move.id)
                     # print("beforecheck",self.chessboard_.board[1][5])
                     self.chessgamedata.current_player="black" if self.chessgamedata.current_player=="white" else "white"
                     self.checkthegame()
-                    self.session.commit()
+                    if self.session:
+                        self.session.commit()
                     if self.chessgamedata.chessgame_ended==True:
                         self.replay_game_mode()
-                    self.session.commit()
+                    if self.session:
+                        self.session.commit()
                     # print("aftercheck",self.chessboard_.board[1][5])
                     if self.update_gui_ :
                         self.update_gui_(self.chessgamedata.current_player,self.chessgamedata.status)
@@ -79,6 +91,7 @@ class ChessGame:
                 # print(self.chessboard_.selected_pos)
                 # print(self.chessboard_.selected_piece)
             else: #now selecting a piece
+                self.chessboard_.current_move=None
                 # print("select piece check")
                 piece=self.chessboard_.board[r][c]
                 # print(piece)
@@ -109,8 +122,9 @@ class ChessGame:
     def restartgame(self): #new game
         new_gamedata=ChessGameData()
         self.chessgamedata=new_gamedata
-        self.session.add(self.chessgamedata)
-        self.session.commit()
+        if self.session:
+            self.session.add(self.chessgamedata)
+            self.session.commit()
         new_board=ChessBoard(new_gamedata.id)
         self.chessboard_=new_board
         self.chessboard_.setup_board(self,self.chessgamedata.ruleset_) 
@@ -120,8 +134,9 @@ class ChessGame:
         # self.chessgamedata.current_player="white"
         # self.chessgamedata.status=" "
         # self.chessboard_.move_list=[]
-        self.session.add(self.chessboard_)
-        self.session.commit()
+        if self.session:
+            self.session.add(self.chessboard_)
+            self.session.commit()
         if self.synchro_gui_:
             self.synchro_gui_(self.chessboard_.board,self.chessgamedata.status,self.chessgamedata.current_player)
 
@@ -190,19 +205,25 @@ class ChessGame:
 
 ####
     def replay_game_mode(self):
-        replay_board = ChessGame.deepcopy_board_without_id(self.chessboard_)
+        replay_board = ChessGame.deepcopy_board_without_id(self.chessboard_,self.session)
         print("YYYY",replay_board.gamedata_id, self.chessboard_.gamedata_id, replay_board.is_replay)
-        self.session.add(replay_board)
-        self.session.commit()
+        if self.session:
+            self.session.add(replay_board)
+            self.session.commit()
 
     @staticmethod
-    def deepcopy_board_without_id(originalboard):
+    def deepcopy_board_without_id(originalboard,session):
         dc=ChessBoard(originalboard.gamedata_id,is_replay=True)
         dc.whitepieces=copy.deepcopy(originalboard.whitepieces)
         dc.blackpieces=copy.deepcopy(originalboard.blackpieces)
         dc.piece_lookup=copy.deepcopy(originalboard.piece_lookup)
         dc.board=copy.deepcopy(originalboard.board)
-        dc.current_move=copy.deepcopy(originalboard.current_move)
+        dc.current_move=session.execute(
+                                        select(ChessMove)
+                                        .where(ChessMove.board_id == originalboard.id)
+                                        .order_by(ChessMove.id.desc())
+                                        .limit(1)
+                                    ).scalar_one_or_none()
         return dc
 
 

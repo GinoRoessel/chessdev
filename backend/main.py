@@ -13,8 +13,8 @@ if __name__== "__main__":
     session=get_session()
     root=tk.Tk()
 
-    game=ChessGame(root,session)
-    gui=ChessGUI(root,game)
+    game_=ChessGame(root,session)
+    gui=ChessGUI(root,game_)
     root.mainloop() 
      
     ###
