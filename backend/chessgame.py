@@ -38,12 +38,14 @@ class ChessGame:
         #
 
     
-    def on_square_click(self,r,c): #button command for the squares
+    def on_square_click(self,r2,c2,r1,c1): #button command for the squares
         print("touched")
+        completed=False
+        selected_piece=self.chessboard_.board[r1][c1]
         if self.chessgamedata.status!="white is mated, game over" and self.chessgamedata.status!="black is mated, game over":
-            if self.chessgamedata.selected_piece!=None: #if you selected a piece
-                move_to_prove=ChessMove(self.chessboard_.id,self.chessgamedata.selected_posy,self.chessgamedata.selected_posx,r,c,
-                                        self.chessgamedata.selected_piece)
+            if selected_piece!=None: #if you selected a piece
+                move_to_prove=ChessMove(self.chessboard_.id,r1,c1,r2,c2,
+                                        selected_piece)
                 self.chessboard_.current_move=self.checking_move(move_to_prove)
                 if self.chessboard_.current_move:
                     self.chessboard_.make_move(self.session,self.chessboard_.current_move)
@@ -84,25 +86,26 @@ class ChessGame:
                         elif move_.is_promotion==True:
                             self.changes_gui_(move_.startposy,move_.startposx,self.chessboard_.board[move_.startposy][move_.startposx])
                             self.changes_gui_(move_.endposy,move_.endposx,self.chessboard_.board[move_.endposy][move_.endposx])
-
-                self.chessgamedata.selected_piece=None
-                self.chessgamedata.selected_posy=None
-                self.chessgamedata.selected_posx=None
+                    completed=True
+                # self.chessgamedata.selected_piece=None
+                # self.chessgamedata.selected_posy=None
+                # self.chessgamedata.selected_posx=None
                 # print(self.chessboard_.selected_pos)
                 # print(self.chessboard_.selected_piece)
-            else: #now selecting a piece
-                self.chessboard_.current_move=None
+            # else: #now selecting a piece
+            #     self.chessboard_.current_move=None #? dont know the purpose anymore
                 # print("select piece check")
-                piece=self.chessboard_.board[r][c]
+                # piece=self.chessboard_.board[r2][c2]
                 # print(piece)
                 # print(self.chessboard_.piece_lookup["Q","white"])
-                if piece and piece.color==self.chessgamedata.current_player: 
-                    # print("valid selelct piece")
-                    self.chessgamedata.selected_piece=self.chessboard_.board[r][c]
-                    self.chessgamedata.selected_posy=r
-                    self.chessgamedata.selected_posx=c
-                    # print(self.chessboard_.selected_pos)
-                    # print(self.chessboard_.selected_piece)
+                # if piece and piece.color==self.chessgamedata.current_player: 
+                #     # print("valid selelct piece")
+                #     # self.chessgamedata.selected_piece=self.chessboard_.board[r2][c2]
+                #     # self.chessgamedata.selected_posy=r2
+                #     # self.chessgamedata.selected_posx=c2
+                #     # print(self.chessboard_.selected_pos)
+                #     # print(self.chessboard_.selected_piece)
+        return completed
     
     def checking_move(self,move__): #is the move legal?
         return Rules.is_valid_move(self.session,move__,self.chessgamedata,self.chessboard_,self.promotion_choice_)
@@ -168,7 +171,8 @@ class ChessGame:
     
     def get_next_game_board(self, gamedata_id_):
         return self.session.execute(
-            select(ChessBoard).where(ChessBoard.gamedata_id== gamedata_id_)
+            select(ChessBoard).where(ChessBoard.gamedata_id== gamedata_id_,
+                                     ChessBoard.is_replay==False)
         ).scalar_one_or_none()
 
     def lastgame(self):
@@ -200,7 +204,8 @@ class ChessGame:
     
     def get_last_game_board(self, gamedata_id_):
         return self.session.execute(
-            select(ChessBoard).where(ChessBoard.gamedata_id== gamedata_id_)
+            select(ChessBoard).where(ChessBoard.gamedata_id== gamedata_id_,
+                                     ChessBoard.is_replay==False)
         ).scalar_one_or_none()
 
 ####

@@ -4,10 +4,14 @@ from chesspieces import *
 class ChessGUI:
     def __init__(self,root,game):
         self.root=root
+        self.game=game
+        self.posy=None
+        self.posx=None
         self.topframe=tk.Frame(root)
         self.topframe.pack()
         self.bottomframe=tk.Frame(root)
         self.bottomframe.pack()
+
 
         #status label
         self.status_label = tk.Label(self.topframe, text=" ", font=("Arial", 14), bg="lightgray")
@@ -78,7 +82,7 @@ class ChessGUI:
                                     padx=40,
                                     pady=40,
                                     font=('Arial', 24, 'bold'),
-                                    command=lambda r=row, c=col: game.on_square_click(r,c))
+                                    command=lambda r=row, c=col: self.on_square_click(r,c))
                 button.grid(row=row, column=col, sticky="nsew")
                 self.buttons[row][col]=button
         for i in range(8):
@@ -160,3 +164,12 @@ class ChessGUI:
     def set_piece(self,piece): #part of promotion
         self.gui_choice_.set(piece)  
         self.top.destroy()  
+
+    def on_square_click(self,r,c):
+        if self.posy and self.posx:
+            self.game.on_square_click(r,c,self.posy,self.posx)
+            self.posy=None
+            self.posx=None
+        else:
+            self.posy=r
+            self.posx=c
