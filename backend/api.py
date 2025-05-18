@@ -91,21 +91,24 @@ def game():
     return jsonify(response) 
 
 
-@app.route("/game", methods=["GET"])
-def games():
+@app.route("/game/get", methods=["GET"])
+def game_get():
+    print("QQQ")
     try:
         sess=get_session()
         gamedata_id = request.args.get('gamedata_id', type=int)
         board_id = request.args.get('board_id', type=int)
-        before_id = request.args.get('before_id', type=int)
-        after_id = request.args.get('after_id', type=int)
-        if before_id:
-            gamedata = sess.query(ChessGameData).get(before_id)
+        before_str = request.args.get('before', default='false')
+        before = before_str.lower() == 'true'
+        after_str = request.args.get('after', default='false')
+        after = after_str.lower() == 'true'
+        if before:
+            gamedata = sess.query(ChessGameData).get(gamedata_id)
             chessboard = sess.query(ChessBoard).get(board_id)
             game_=ChessGame(None,sess,gamedata,chessboard)
             game_.lastgame()
-        elif after_id:
-            gamedata = sess.query(ChessGameData).get(after_id)
+        elif after:
+            gamedata = sess.query(ChessGameData).get(gamedata_id)
             chessboard = sess.query(ChessBoard).get(board_id)
             game_=ChessGame(None,sess,gamedata,chessboard)
             game_.nextgame()
@@ -116,12 +119,11 @@ def games():
 
         response= {"current_player":game_.chessgamedata.current_player,
                         "status":game_.chessgamedata.status,
-                        "board":game_.chessboard_.board,
+                        "board":serialize_board(game_.chessboard_.board),
                         "chessgamedata_id":game_.chessgamedata.id,
                         "chessboard_id":game_.chessboard_.id}
     finally:
         sess.close()
-    response.headers.add("Access-Control-Allow-Origin", "*")
     return jsonify(response)
 
 @app.route("/game/board", methods=["POST"])
@@ -147,6 +149,8 @@ def board():
     
 
 if __name__ == "__main__":
+    delete_tables()
     create_tables()
+    print("mapppp",app.url_map)
     app.run(debug=True)
 
