@@ -1,0 +1,67 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: Arial, sans-serif;
+}
+
+.top-frame {
+  background-color: lightgray;
+  padding: 10px;
+  text-align: center;
+  width: 600px;
+}
+
+.status-label,
+.current-player-label {
+  font-size: 18px;
+  margin: 8px 0;
+}
+
+.board-frame {
+  display: grid;
+  grid-template-columns: repeat(8, 50px);
+  grid-template-rows: repeat(8, 50px);
+  gap: 0;
+  margin: 10px auto;
+  border: 2px solid black;
+  width: 400px;
+  height: 400px;
+}
+
+.square {
+  border: none;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+}
+
+.square.light {
+  background-color: lightgreen;
+}
+
+.square.dark {
+  background-color: green;
+}
+
+.bottom-frame {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.bottom-frame button {
+  background-color: grey;
+  color: white;
+  font-size: 16px;
+  padding: 10px 25px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.bottom-frame button:hover {
+  background-color: darkgrey;
+}
