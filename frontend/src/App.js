@@ -117,8 +117,64 @@ function App() {
 };;;
 
 
-  const handleLastMove = () => alert('Last Move');
-  const handleNextMove = () => alert('Next Move');
+  const handleLastMove = () => {
+    const requestData = {
+      chessgamedata_id: chessgamedata_id.current,
+      chessboard_id: chessboard_id.current,
+      startrow: null,
+      startcol: null,
+      endrow: null,
+      endcol: null,
+      nextmove: false,
+      lastmove: true,
+    };
+    fetch("http://localhost:5000/game/move", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(requestData)
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Antwort vom Server:", data);
+      setStatus(data.status);
+      setCurrentPlayer(data.current_player);
+      setBoardData(data.board)
+    })
+    .catch(err => {
+      console.error("Fehler bei der Anfrage:", err);
+    });;
+  }
+  const handleNextMove = () => {
+    const requestData = {
+      chessgamedata_id: chessgamedata_id.current,
+      chessboard_id: chessboard_id.current,
+      startrow: null,
+      startcol: null,
+      endrow: null,
+      endcol: null,
+      nextmove: true,
+      lastmove: false,
+    };
+    fetch("http://localhost:5000/game/move", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(requestData)
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Antwort vom Server:", data);
+      setStatus(data.status);
+      setCurrentPlayer(data.current_player);
+      setBoardData(data.board)
+    })
+    .catch(err => {
+      console.error("Fehler bei der Anfrage:", err);
+    });;
+  };
 
 
   return (

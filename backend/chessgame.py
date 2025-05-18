@@ -233,6 +233,7 @@ class ChessGame:
 
 
     def lastmove(self):
+        print("XXX")
         move_=self.get_last_move()
         print("ÖÖÖÖ")
         if move_:
@@ -270,6 +271,8 @@ class ChessGame:
                                         .order_by(ChessMove.id.desc())
                                         .limit(1)
                                     ).scalar_one_or_none()
+            self.session.commit()
+            return board.board
 
     def get_last_move(self):
         board=self.session.execute(
@@ -313,6 +316,8 @@ class ChessGame:
                         self.changes_gui_(move_.startposy,move_.startposx,board.board[move_.startposy][move_.startposx])
                         self.changes_gui_(move_.endposy,move_.endposx,board.board[move_.endposy][move_.endposx])
             board.current_move=move_
+            self.session.commit()
+            return board.board
 
     def get_next_move(self):
         board=self.session.execute(

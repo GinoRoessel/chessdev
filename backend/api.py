@@ -42,21 +42,31 @@ def move():
         lastmove = data["lastmove"]
         game_=ChessGame(None,sess,gamedata,chessboard)
         if nextmove:
-            game_.nextmove()
+            board_=game_.nextmove()
             made=False
+            response={"current_player":game_.chessgamedata.current_player,
+                        "status":game_.chessgamedata.status,
+                        "board":serialize_board(board_),
+                        "chessgamedata_id":game_.chessgamedata.id,
+                        "chessboard_id":game_.chessboard_.id}
         elif lastmove:
-            game_.lastmove()
+            print("lllllastmove")
+            board_=game_.lastmove()
             made=False
+            response={"current_player":game_.chessgamedata.current_player,
+                        "status":game_.chessgamedata.status,
+                        "board":serialize_board(board_),
+                        "chessgamedata_id":game_.chessgamedata.id,
+                        "chessboard_id":game_.chessboard_.id}
         else:
             made=True if game_.on_square_click(data["endrow"],data["endcol"],data["startrow"],data["startcol"]) else False
-  
-    
-        response={"current_player":game_.chessgamedata.current_player,
+            response={"current_player":game_.chessgamedata.current_player,
                         "status":game_.chessgamedata.status,
                         "board":serialize_board(game_.chessboard_.board),
                         "chessgamedata_id":game_.chessgamedata.id,
                         "chessboard_id":game_.chessboard_.id,
                         }
+
         return jsonify(response)
     except Exception as e:
         print("Fehler in /game",e)
