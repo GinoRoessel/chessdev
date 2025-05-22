@@ -10,10 +10,11 @@ function App() {
   const [status, setStatus] = useState('');
   const [currentPlayer, setCurrentPlayer] = useState('');
   const [boardData, setBoardData] = useState([]);
+  const BACKEND_URL = "http://localhost:5000"
 
 
   useEffect(() => {
-  fetch("http://localhost:5000/game", {
+  fetch(`${BACKEND_URL}/game`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -35,7 +36,7 @@ function App() {
 }, []);
 
   const handleRestart = () =>{
-  fetch("http://localhost:5000/game", {
+  fetch(`${BACKEND_URL}/game`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -68,7 +69,7 @@ function App() {
       after:'false'
     }).toString();
     console.log("wirklich letzter check davor",query)
-  fetch(`http://localhost:5000/game/get?${query}`, {
+  fetch(`${BACKEND_URL}/game/get?${query}`, {
     method: "GET"
   })
     .then((res) => res.json())
@@ -98,7 +99,7 @@ function App() {
       after:'true'
     }).toString();
     console.log("wirklich letzter check davor",query)
-  fetch(`http://localhost:5000/game/get?${query}`, {
+  fetch(`${BACKEND_URL}/game/get?${query}`, {
     method: "GET"
   })
     .then((res) => res.json())
@@ -128,7 +129,7 @@ function App() {
       nextmove: false,
       lastmove: true,
     };
-    fetch("http://localhost:5000/game/move", {
+    fetch(`${BACKEND_URL}/game/move`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -157,7 +158,7 @@ function App() {
       nextmove: true,
       lastmove: false,
     };
-    fetch("http://localhost:5000/game/move", {
+    fetch(`${BACKEND_URL}/game/move`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -185,6 +186,7 @@ function App() {
         <div className="board-frame">
           <ChessBoardWrapper
           key={gameKey}
+          URL={BACKEND_URL}
           board={boardData} 
           chessgamedataId={chessgamedata_id.current} 
           chessboardId={chessboard_id.current}

@@ -2,7 +2,7 @@
 import React from 'react'
 
 
-export const ChessBoardWrapper=({board, chessgamedataId, chessboardId, setStatus,setCurrentPlayer, setBoardData})=>{
+export const ChessBoardWrapper=({URL, board, chessgamedataId, chessboardId, setStatus,setCurrentPlayer, setBoardData})=>{
   const selectedSquares= React.useRef([])
 
   const handleOnSquareClick = (row,col) =>{
@@ -23,7 +23,7 @@ export const ChessBoardWrapper=({board, chessgamedataId, chessboardId, setStatus
       nextmove: false,
       lastmove: false,
     };
-    fetch("http://localhost:5000/game/move", {
+    fetch(`${URL}/game/move`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

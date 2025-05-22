@@ -162,5 +162,5 @@ if __name__ == "__main__":
     delete_tables()
     create_tables()
     print("mapppp",app.url_map)
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000,debug=True)
 
